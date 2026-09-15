@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>盒子的矩阵课 · 旋转/缩放/斜切/位移 流程演示</title>
+<script>
+(function() {
+  try {
+    var s = localStorage.getItem('tbl-theme');
+    if (!s) s = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    if (s === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  } catch (e) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: dark;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #11111a;
+  --bg-tertiary: #1a1a26;
+  --bg-card: #14141f;
+  --text-primary: #e8e8f0;
+  --text-secondary: #9090a8;
+  --text-tertiary: #686880;
+  --accent-blue: #39d2c0;
+  --accent-green: #3fb950;
+  --accent-orange: #ffb454;
+  --accent-red: #ff6b6b;
+  --accent-purple: #7aa2f7;
+  --accent-cyan: #39d2c0;
+  --border-primary: rgba(255,255,255,0.08);
+  --border-secondary: rgba(255,255,255,0.05);
+  --border-accent: #39d2c0;
+  --code-bg: #0d0d14;
+  --canvas-bg: #0d0d14;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --shadow-card: 0 8px 32px -8px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+  --glow-cyan: rgba(57,210,192,0.15);
+  --glow-blue: rgba(122,162,247,0.10);
+  --transition-fast: 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-theme="light"] {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #e1e4e8;
+  --bg-card: #ffffff;
+  --text-primary: #24292e;
+  --text-secondary: #586069;
+  --text-tertiary: #6a737d;
+  --accent-blue: #0366d6;
+  --accent-green: #1a7f37;
+  --accent-orange: #bc5e0a;
+  --accent-red: #cf222e;
+  --accent-purple: #5762a4;
+  --accent-cyan: #067d8d;
+  --border-primary: #d0d7de;
+  --border-secondary: #e1e4e8;
+  --border-accent: #0366d6;
+  --code-bg: #f6f8fa;
+  --canvas-bg: #f6f8fa;
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+  --glow-cyan: rgba(3,102,214,0.05);
+  --glow-blue: rgba(87,98,164,0.05);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', -apple-system, system-ui, sans-serif;
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% 0%, var(--glow-cyan), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 25%, var(--glow-blue), transparent 55%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  line-height: 1.75;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.topbar {
+  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  padding: 13px 26px 9px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.topbar h1 { font-size: 20px; font-weight: 800; }
+.topbar h1 .hl { color: var(--accent-blue); text-shadow: 0 0 18px rgba(57,210,192,0.35); }
+.topbar .sub { font-size: 12.5px; color: var(--text-tertiary); flex: 1; min-width: 240px; }
+.theme-toggle {
+  position: fixed; top: 11px; right: 13px; z-index: 99;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--border-primary);
+  color: var(--text-secondary); font-size: 16px; cursor: pointer;
+  box-shadow: var(--shadow-card); transition: all var(--transition-fast);
+  display: flex; align-items: center; justify-content: center;
+}
+.theme-toggle:hover { color: var(--accent-blue); border-color: var(--border-accent); }
+
+.app { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 16px; padding: 14px 18px; }
+@media (max-width: 980px) {
+  body { display: block; overflow: auto; height: auto; }
+  .app { display: flex; flex-direction: column; }
+  .stage-wrap { height: 56vh; }
+  .panel { overflow: visible; }
+}
+.stage-wrap { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.stage { position: relative; flex: 1; min-height: 0; }
+.stage canvas {
+  width: 100%; height: 100%; display: block; touch-action: none;
+  border-radius: var(--radius-md); background: var(--canvas-bg);
+  border: 1px solid var(--border-primary); box-shadow: var(--shadow-card);
+  cursor: grab;
+}
+.legend {
+  position: absolute; left: 12px; bottom: 11px; display: flex; gap: 11px; flex-wrap: wrap;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--bg-card) 82%, transparent);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-primary); border-radius: var(--radius-sm);
+  padding: 4px 11px; font-size: 11px; color: var(--text-tertiary);
+}
+.legend .li { display: inline-flex; align-items: center; gap: 5px; }
+.legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.navbar {
+  flex-shrink: 0; display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card); border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md); padding: 9px 14px; box-shadow: var(--shadow-card);
+  flex-wrap: wrap;
+}
+.navbar .step-title { font-size: 13px; font-weight: 650; color: var(--text-primary); flex: 1; min-width: 180px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-secondary); border: 1px solid var(--border-primary);
+  color: var(--text-secondary); font-size: 13px; padding: 6px 14px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: all var(--transition-fast); font-family: inherit;
+}
+.btn:hover:not(:disabled) { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+.btn.primary { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+.btn:disabled { opacity: 0.35; cursor: default; }
+.dots { display: flex; gap: 6px; align-items: center; }
+.dots .d {
+  width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border-primary);
+  font-size: 10.5px; color: var(--text-tertiary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); font-family: 'JetBrains Mono', Consolas, monospace;
+}
+.dots .d:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+.dots .d.cur { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); font-weight: 700; }
+.dots .d.done { border-color: var(--accent-green); color: var(--accent-green); }
+
+.panel { display: flex; flex-direction: column; gap: 13px; min-width: 0; min-height: 0; overflow-y: auto; padding-right: 4px; }
+.pgroup {
+  background: var(--bg-card); border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md); padding: 15px 17px; box-shadow: var(--shadow-card);
+}
+.pgroup > h3 { font-size: 13px; font-weight: 650; color: var(--accent-blue); margin-bottom: 9px; }
+.lesson-no { font-size: 11px; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 4px; }
+.lesson-title { font-size: 17px; font-weight: 750; margin-bottom: 10px; }
+.lesson-text { font-size: 13.5px; color: var(--text-secondary); line-height: 2; }
+.lesson-text b { color: var(--text-primary); }
+.lesson-text .cx { color: var(--accent-orange); font-weight: 650; }
+.lesson-text .cy { color: var(--accent-green); font-weight: 650; }
+.lesson-text .cz { color: var(--accent-cyan); font-weight: 650; }
+.lesson-text .ct { color: var(--accent-purple); font-weight: 650; }
+.lesson-text .cd { color: var(--text-tertiary); }
+
+.mxwrap { display: flex; align-items: stretch; justify-content: center; gap: 0; margin: 6px 0 2px; }
+.mxb { width: 7px; border: 2.5px solid var(--text-secondary); }
+.mxb.l { border-right: none; border-radius: 3px 0 0 3px; }
+.mxb.r { border-left: none; border-radius: 0 3px 3px 0; }
+table.mx { border-collapse: collapse; }
+table.mx td {
+  border: none; padding: 5px 12px; text-align: right;
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14px;
+  font-variant-numeric: tabular-nums; color: var(--text-primary); min-width: 70px;
+  transition: background .3s, opacity .3s;
+}
+table.mx td.cx { color: var(--accent-orange); }
+table.mx td.cy { color: var(--accent-green); }
+table.mx td.cz { color: var(--accent-cyan); }
+table.mx td.ct { color: var(--accent-purple); }
+table.mx td.ghost { color: var(--text-tertiary); }
+table.mx td.hot { background: color-mix(in srgb, currentColor 18%, transparent); border-radius: 4px; }
+table.mx td.dimmed { opacity: 0.35; }
+.mx-cap { text-align: center; font-size: 11.5px; color: var(--text-tertiary); margin: 2px 0 4px; }
+.mtag {
+  display: block; text-align: center; font-size: 9px; margin-top: -3px; margin-bottom: 2px;
+  font-family: 'JetBrains Mono', Consolas, monospace; color: var(--text-tertiary); height: 12px;
+}
+.mtag.cx { color: var(--accent-orange); } .mtag.cy { color: var(--accent-green); }
+.mtag.cz { color: var(--accent-cyan); } .mtag.ct { color: var(--accent-purple); }
+
+.triple { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
+.tcell label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); margin-bottom: 2px; }
+.tcell label .v { font-family: 'JetBrains Mono', Consolas, monospace; color: var(--accent-cyan); font-variant-numeric: tabular-nums; }
+input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--bg-card); border: 2px solid var(--accent-blue); cursor: pointer;
+}
+.tcell label.switch { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>盒子的矩阵课 <span class="hl">· 流程演示</span></h1>
+  <span class="sub">旋转 / 缩放 / 斜切 / 位移 —— 一步一步看盒子怎么被矩阵捏变形。拖画布旋转视角 · 滚轮缩放 · 用 ← → 键翻页</span>
+</div>
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">&#9790;</button>
+
+<main class="app">
+  <section class="stage-wrap">
+    <div class="stage">
+      <canvas id="cv" width="900" height="640"></canvas>
+      <div class="legend">
+        <span class="li"><span class="dot" style="background:var(--accent-orange)"></span>x 箭头（第1列）</span>
+        <span class="li"><span class="dot" style="background:var(--accent-green)"></span>y 箭头（第2列）</span>
+        <span class="li"><span class="dot" style="background:var(--accent-cyan)"></span>z 箭头（第3列）</span>
+        <span class="li"><span class="dot" style="border:2px solid var(--accent-purple)"></span>原点（第4列）</span>
+        <span class="li"><span class="dot" style="border:1.5px dashed var(--text-tertiary)"></span>原始盒子（虚影）</span>
+      </div>
+    </div>
+    <div class="navbar">
+      <button class="btn" id="prev">&#9666; 上一步</button>
+      <button class="btn primary" id="next">下一步 &#9654;</button>
+      <button class="btn" id="replay">&#9654; 重播本步</button>
+      <span class="step-title" id="step-title"></span>
+      <div class="dots" id="dots"></div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="pgroup" id="lesson">
+      <div class="lesson-no" id="lesson-no"></div>
+      <div class="lesson-title" id="lesson-title"></div>
+      <div class="lesson-text" id="lesson-text"></div>
+    </div>
+    <div class="pgroup" id="matrix-group">
+      <h3>当前矩阵 M（播放时实时变化）</h3>
+      <div class="mxwrap">
+        <div class="mxb l"></div>
+        <table class="mx" id="mxtab"></table>
+        <div class="mxb r"></div>
+      </div>
+      <div class="mx-cap" id="mx-cap"></div>
+    </div>
+    <div class="pgroup" id="explore-group" style="display:none">
+      <h3>动手试试（改完立刻生效）</h3>
+      <div id="explore-host"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+// ============================================================
+// 主题
+// ============================================================
+var REDRAWS = [];
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+var PAL = {};
+function refreshPalette() {
+  var light = document.documentElement.getAttribute('data-theme') === 'light';
+  PAL.x = cssVar('--accent-orange');
+  PAL.y = cssVar('--accent-green');
+  PAL.z = cssVar('--accent-cyan');
+  PAL.t = cssVar('--accent-purple');
+  PAL.bg = cssVar('--canvas-bg');
+  PAL.text = cssVar('--text-primary');
+  PAL.dim = cssVar('--text-tertiary');
+  PAL.grid = light ? 'rgba(0,0,0,0.09)' : 'rgba(255,255,255,0.07)';
+  PAL.axis = light ? 'rgba(0,0,0,0.28)' : 'rgba(255,255,255,0.25)';
+  PAL.ghost = light ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.22)';
+}
+function toggleTheme() {
+  var el = document.documentElement;
+  var light = el.getAttribute('data-theme') === 'light';
+  if (light) { el.removeAttribute('data-theme'); localStorage.setItem('tbl-theme', 'dark'); }
+  else { el.setAttribute('data-theme', 'light'); localStorage.setItem('tbl-theme', 'light'); }
+  refreshPalette();
+  REDRAWS.forEach(function(f) { f(); });
+}
+
+// ============================================================
+// 3D 数学（row-major 4×4，列向量 M·p）
+// ============================================================
+function m4I() { return [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]; }
+function m4mul(A, B) {
+  var C = new Array(16);
+  for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) {
+    var v = 0;
+    for (var k = 0; k < 4; k++) v += A[r * 4 + k] * B[k * 4 + c];
+    C[r * 4 + c] = v;
+  }
+  return C;
+}
+function m4rotX(d) { var r = d * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return [1,0,0,0, 0,c,-s,0, 0,s,c,0, 0,0,0,1]; }
+function m4rotY(d) { var r = d * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return [c,0,s,0, 0,1,0,0, -s,0,c,0, 0,0,0,1]; }
+function m4rotZ(d) { var r = d * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return [c,-s,0,0, s,c,0,0, 0,0,1,0, 0,0,0,1]; }
+function m4rotAxis(axis, d) { return axis === 'X' ? m4rotX(d) : (axis === 'Y' ? m4rotY(d) : m4rotZ(d)); }
+function m4trans(x, y, z) { var M = m4I(); M[3] = x; M[7] = y; M[11] = z; return M; }
+function m4ap(M, p) {
+  return [
+    M[0] * p[0] + M[1] * p[1] + M[2] * p[2] + M[3],
+    M[4] * p[0] + M[5] * p[1] + M[6] * p[2] + M[7],
+    M[8] * p[0] + M[9] * p[1] + M[10] * p[2] + M[11]
+  ];
+}
+function m4ap4(M, p) {
+  return [
+    M[0] * p[0] + M[1] * p[1] + M[2] * p[2] + M[3] * p[3],
+    M[4] * p[0] + M[5] * p[1] + M[6] * p[2] + M[7] * p[3],
+    M[8] * p[0] + M[9] * p[1] + M[10] * p[2] + M[11] * p[3],
+    M[12] * p[0] + M[13] * p[1] + M[14] * p[2] + M[15] * p[3]
+  ];
+}
+function m4inv(src) {
+  var a = src.slice(), inv = m4I(), c, r, t;
+  for (var col = 0; col < 4; col++) {
+    var piv = col, mx = Math.abs(a[col * 4 + col]);
+    for (r = col + 1; r < 4; r++) { var v = Math.abs(a[r * 4 + col]); if (v > mx) { mx = v; piv = r; } }
+    if (mx < 1e-10) return null;
+    if (piv !== col) for (c = 0; c < 4; c++) {
+      t = a[col * 4 + c]; a[col * 4 + c] = a[piv * 4 + c]; a[piv * 4 + c] = t;
+      t = inv[col * 4 + c]; inv[col * 4 + c] = inv[piv * 4 + c]; inv[piv * 4 + c] = t;
+    }
+    var d = a[col * 4 + col];
+    for (c = 0; c < 4; c++) { a[col * 4 + c] /= d; inv[col * 4 + c] /= d; }
+    for (r = 0; r < 4; r++) if (r !== col) {
+      var f = a[r * 4 + col];
+      if (f) for (c = 0; c < 4; c++) { a[r * 4 + c] -= f * a[col * 4 + c]; inv[r * 4 + c] -= f * inv[col * 4 + c]; }
+    }
+  }
+  return inv;
+}
+function m4lookAt(eye, ctr, up) {
+  var f = v3norm([ctr[0] - eye[0], ctr[1] - eye[1], ctr[2] - eye[2]]);
+  var s = v3norm(v3cross(f, up));
+  var u = v3cross(s, f);
+  return [
+    s[0], s[1], s[2], -(s[0] * eye[0] + s[1] * eye[1] + s[2] * eye[2]),
+    u[0], u[1], u[2], -(u[0] * eye[0] + u[1] * eye[1] + u[2] * eye[2]),
+    -f[0], -f[1], -f[2], (f[0] * eye[0] + f[1] * eye[1] + f[2] * eye[2]),
+    0, 0, 0, 1
+  ];
+}
+function m4persp(fovDeg, aspect, n, f) {
+  var t = Math.tan(fovDeg * Math.PI / 360);
+  return [1/(aspect*t),0,0,0, 0,1/t,0,0, 0,0,-(f+n)/(f-n),-2*f*n/(f-n), 0,0,-1,0];
+}
+function v3cross(a, b) { return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
+function v3norm(a) { var l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0]/l, a[1]/l, a[2]/l]; }
+function lerpM(A, B, t) {
+  var C = new Array(16);
+  for (var i = 0; i < 16; i++) C[i] = A[i] + (B[i] - A[i]) * t;
+  return C;
+}
+function f2(n) { return (Math.abs(n) < 5e-4 ? 0 : n).toFixed(2); }
+function f3(n) { return (Math.abs(n) < 5e-4 ? 0 : n).toFixed(3); }
+function hexA(hex, a) {
+  var m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return hex;
+  var n = parseInt(m[1], 16);
+  return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+
+// ============================================================
+// 3D 微引擎
+// ============================================================
+function pointerPos(canvas, e) {
+  var r = canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) * (canvas.width / r.width), (e.clientY - r.top) * (canvas.height / r.height)];
+}
+function make3D(canvas, opt) {
+  var s = {
+    canvas: canvas, ctx: canvas.getContext('2d'),
+    W: canvas.width, H: canvas.height,
+    yaw: opt.yaw, pitch: opt.pitch, dist: opt.dist, target: opt.target,
+    _orbiting: false, _last: null, _V: null, _P: null
+  };
+  s.begin = function() {
+    var cp = Math.cos(s.pitch * Math.PI / 180), sp = Math.sin(s.pitch * Math.PI / 180);
+    var cy = Math.cos(s.yaw * Math.PI / 180), sy = Math.sin(s.yaw * Math.PI / 180);
+    var dir = [cp * cy, cp * sy, sp];
+    var eye = [s.target[0] + dir[0] * s.dist, s.target[1] + dir[1] * s.dist, s.target[2] + dir[2] * s.dist];
+    s._V = m4lookAt(eye, s.target, [0, 0, 1]);
+    s._P = m4persp(45, s.W / s.H, 0.3, 300);
+  };
+  s.proj = function(p) {
+    var v = m4ap(s._V, p);
+    var c = m4ap4(s._P, [v[0], v[1], v[2], 1]);
+    var w = c[3];
+    if (w <= 0.05) return null;
+    return { px: (c[0] / w + 1) / 2 * s.W, py: (1 - c[1] / w) / 2 * s.H, z: v[2] };
+  };
+  s.items = [];
+  s.item = function(z, fn) { s.items.push({ z: z, fn: fn }); };
+  s.flush = function() {
+    s.items.sort(function(a, b) { return a.z - b.z; });
+    s.items.forEach(function(it) { it.fn(s.ctx); });
+    s.items = [];
+  };
+  canvas.addEventListener('pointerdown', function(e) {
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    s._orbiting = true;
+    s._last = pointerPos(canvas, e);
+  });
+  canvas.addEventListener('pointermove', function(e) {
+    if (!s._orbiting) return;
+    var pos = pointerPos(canvas, e);
+    var dx = pos[0] - s._last[0], dy = pos[1] - s._last[1];
+    s._last = pos;
+    s.yaw -= dx * 0.4;
+    s.pitch = Math.max(-10, Math.min(85, s.pitch + dy * 0.3));
+    draw();
+  });
+  canvas.addEventListener('pointerup', function() { s._orbiting = false; });
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    s.dist = Math.max(2.5, Math.min(60, s.dist * (e.deltaY > 0 ? 1.12 : 0.89)));
+    draw();
+  }, { passive: false });
+  return s;
+}
+function addLine3(sc, a, b, color, lw, dash) {
+  var pa = sc.proj(a), pb = sc.proj(b);
+  if (!pa || !pb) return;
+  sc.item((pa.z + pb.z) / 2, function(ctx) {
+    ctx.save();
+    if (dash) ctx.setLineDash(dash);
+    ctx.strokeStyle = color; ctx.lineWidth = lw || 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(pa.px, pa.py); ctx.lineTo(pb.px, pb.py); ctx.stroke();
+    ctx.restore();
+  });
+}
+function addArrow3(sc, a, b, color, lw, dash) {
+  var pa = sc.proj(a), pb = sc.proj(b);
+  if (!pa || !pb) return;
+  var z = (pa.z + pb.z) / 2;
+  sc.item(z, function(ctx) {
+    ctx.save();
+    if (dash) ctx.setLineDash(dash);
+    ctx.strokeStyle = color; ctx.lineWidth = lw || 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(pa.px, pa.py); ctx.lineTo(pb.px, pb.py); ctx.stroke();
+    ctx.setLineDash([]);
+    var ang = Math.atan2(pb.py - pa.py, pb.px - pa.px);
+    var hl = Math.max(6, Math.min(16, 90 / Math.max(0.6, -z)));
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(pb.px, pb.py);
+    ctx.lineTo(pb.px - hl * Math.cos(ang - .42), pb.py - hl * Math.sin(ang - .42));
+    ctx.lineTo(pb.px - hl * Math.cos(ang + .42), pb.py - hl * Math.sin(ang + .42));
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  });
+}
+function addDot3(sc, p, r, color, hollow) {
+  var pa = sc.proj(p);
+  if (!pa) return;
+  var rr = Math.max(3, Math.min(r * 1.8, r * 9 / Math.max(1, -pa.z)));
+  sc.item(pa.z, function(ctx) {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(pa.px, pa.py, rr, 0, Math.PI * 2);
+    if (hollow) { ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.fillStyle = PAL.bg; ctx.fill(); ctx.stroke(); }
+    else { ctx.fillStyle = color; ctx.fill(); }
+    ctx.restore();
+  });
+}
+function addLabel3(sc, p, text, color, font, dx, dy) {
+  var pa = sc.proj(p);
+  if (!pa) return;
+  sc.item(pa.z - 0.001, function(ctx) {
+    ctx.save();
+    ctx.font = font || '12px "JetBrains Mono", Consolas, monospace';
+    ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, pa.px + (dx || 6), pa.py + (dy || -6));
+    ctx.restore();
+  });
+}
+function addGroundGrid(sc, half) {
+  half = half || 4;
+  for (var i = -half; i <= half; i++) {
+    var col = (i === 0) ? PAL.axis : PAL.grid;
+    var lw = (i === 0) ? 1.6 : 1;
+    addLine3(sc, [i, -half, 0], [i, half, 0], col, lw);
+    addLine3(sc, [-half, i, 0], [half, i, 0], col, lw);
+  }
+}
+
+// ============================================================
+// 盒子模型
+// ============================================================
+var H = 0.55; // 半边长
+var CORNERS = [];
+for (var ci = 0; ci < 8; ci++) CORNERS.push([ (ci & 1 ? H : -H), (ci & 2 ? H : -H), (ci & 4 ? H : -H) ]);
+// 面：法线轴/方向/颜色/标签
+var FACES = [
+  { idx: [1, 5, 7, 3], col: 'x', alpha: 0.32, label: '+x 面' },
+  { idx: [0, 2, 6, 4], col: 'x', alpha: 0.10, label: null },
+  { idx: [2, 3, 7, 6], col: 'y', alpha: 0.32, label: '+y 面' },
+  { idx: [0, 4, 5, 1], col: 'y', alpha: 0.10, label: null },
+  { idx: [4, 6, 7, 5], col: 'z', alpha: 0.32, label: '+z 面' },
+  { idx: [0, 1, 3, 2], col: 'z', alpha: 0.10, label: null }
+];
+var EDGES = [];
+for (var a8 = 0; a8 < 8; a8++) for (var b8 = a8 + 1; b8 < 8; b8++) {
+  var x8 = a8 ^ b8;
+  if (x8 === 1 || x8 === 2 || x8 === 4) EDGES.push([a8, b8]);
+}
+function drawBox(sc, Mt, opts) {
+  opts = opts || {};
+  var cols = { x: PAL.x, y: PAL.y, z: PAL.z };
+  var world = CORNERS.map(function(c) { return m4ap(Mt, c); });
+  if (opts.ghost) {
+    EDGES.forEach(function(e) {
+      addLine3(sc, CORNERS[e[0]], CORNERS[e[1]], PAL.ghost, 1.3, [4, 4]);
+    });
+  }
+  if (opts.solid !== false) {
+    FACES.forEach(function(f) {
+      var pts = f.idx.map(function(i) { return sc.proj(world[i]); });
+      if (pts.some(function(p) { return !p; })) return;
+      var zc = (pts[0].z + pts[1].z + pts[2].z + pts[3].z) / 4;
+      var col = cols[f.col];
+      sc.item(zc, function(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(pts[0].px, pts[0].py);
+        for (var k = 1; k < 4; k++) ctx.lineTo(pts[k].px, pts[k].py);
+        ctx.closePath();
+        ctx.fillStyle = hexA(col, f.alpha);
+        ctx.fill();
+        ctx.strokeStyle = hexA(col, 0.55);
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+        ctx.restore();
+      });
+      if (f.label) {
+        var cen = [0, 1, 2].map(function(d) {
+          return (f.idx.reduce(function(s, i) { return s + world[i][d]; }, 0)) / 4;
+        });
+        addLabel3(sc, cen, f.label, col, 'bold 11px "Noto Sans SC","Microsoft YaHei",sans-serif', -14, 0);
+      }
+    });
+  }
+}
+
+// ============================================================
+// 步骤课程
+// ============================================================
+var canvas = document.getElementById('cv');
+var sc = make3D(canvas, { yaw: -55, pitch: 24, dist: 7.2, target: [0.35, 0.15, 0.3] });
+var PRM = { tx: 1.3, ty: 0.7, tz: 0.4, sx: 1.55, sy: 0.62, sz: 1.0, rotDeg: 60, rotAxis: 'Z', shearK: 0.85 };
+var st = { step: 0, t: 1, hlCol: -1, hlTimer: null, showLadder: false };
+
+function scaleM() { var M = m4I(); M[0] = PRM.sx; M[5] = PRM.sy; M[10] = PRM.sz; return M; }
+function shearM() { var M = m4I(); M[1] = PRM.shearK; return M; } // 第2列 = (k,1,0)
+function transM() { return m4trans(PRM.tx, PRM.ty, PRM.tz); }
+function rotM() { return m4rotAxis(PRM.rotAxis, PRM.rotDeg); }
+function comboKeys() { // 关键帧：I → S → Sh·S → R·Sh·S → T·R·Sh·S
+  var S = scaleM(), Sh = shearM(), R = rotM(), T = transM();
+  var ShS = m4mul(Sh, S), RShS = m4mul(R, ShS), TRShS = m4mul(T, RShS);
+  return [m4I(), S, ShS, RShS, TRShS];
+}
+
+var STEPS = [
+  {
+    no: '第 1 步 · 热身',
+    title: '盒子的身份证：三支箭头 + 一个原点',
+    text: '矩阵从不直接"搬"东西。它管理的只有四样东西——<span class="cx">x 箭头</span>、<span class="cy">y 箭头</span>、<span class="cz">z 箭头</span>和<span class="ct">原点</span>（蓝圈），钉在盒子身上。<br>现在矩阵是<b>单位矩阵</b>（什么都没发生）：三支箭头互相垂直、长度都是 1，原点在世界中心。矩阵的每一列，就是对应箭头"现在住哪"的登记。<br><span class="cd">👉 拖动画布转转视角，认一认三支箭头和盒子三个着色的面（橙=+x，绿=+y，青=+z）。</span>',
+    M: function() { return m4I(); },
+    ghost: false, autoPlay: false
+  },
+  {
+    no: '第 2 步 · 读法',
+    title: '竖着读矩阵：一列 = 一支箭头的新家',
+    text: '盯着右侧矩阵看——我会依次点亮每一列和对应的箭头：<br><span class="cx">第 1 列 = x 箭头的新家</span>；<span class="cy">第 2 列 = y 箭头的新家</span>；<span class="cz">第 3 列 = z 箭头的新家</span>；<span class="ct">第 4 列 = 原点的新家</span>。<br>盒子的 8 个角都是"配方"调出来的：某个角的坐标 (0.55, 0.55, 0.55) 意思是<b>0.55 份橙箭头 + 0.55 份绿箭头 + 0.55 份青箭头</b>（虚线阶梯）。矩阵换箭头，配方数字不变——这是后面一切变换的机关。',
+    M: function() { return m4I(); },
+    ghost: false, autoPlay: false, ladder: true,
+    onEnter: function() {
+      var seq = [0, 1, 2, 3, -1], i = 0;
+      st.hlTimer = setInterval(function() {
+        setHL(seq[i % seq.length]);
+        i++;
+      }, 1400);
+      setHL(0);
+    },
+    onLeave: function() { if (st.hlTimer) { clearInterval(st.hlTimer); st.hlTimer = null; } setHL(-1); }
+  },
+  {
+    no: '第 3 步 · 位移',
+    title: '平移：三支箭头全不动，只有原点搬家',
+    text: '看矩阵：只有<span class="ct">第 4 列</span>在变（前三列纹丝不动）。<br>箭头一根都没转、没变长——盒子形状完全不变，但因为<b>原点搬到了 (1.3, 0.7, 0.4)</b>，整个盒子跟着整体平移。<br>这就是为什么平移需要第 4 列：光靠"配方混合"（前三列）变不出凭空的"+1.3"。',
+    M: transM,
+    ghost: true, autoPlay: true,
+    explore: [
+      { p: 'tx', label: '平移 x', min: -2.5, max: 2.5, step: 0.05 },
+      { p: 'ty', label: '平移 y', min: -2, max: 2, step: 0.05 },
+      { p: 'tz', label: '平移 z', min: -0.5, max: 2, step: 0.05 }
+    ]
+  },
+  {
+    no: '第 4 步 · 缩放',
+    title: '缩放：箭头不转向，只是变长 / 变短',
+    text: '看矩阵：只有<b>对角线</b>在变——<span class="cx">x 箭头拉长到 1.55 倍</span>（盒子 x 方向变长），<span class="cy">y 箭头压到 0.62</span>（盒子变扁）。<br>配方不变，但"一份箭头"的长度变了：0.55 份 × 1.55 = 走得更远。方块被捏成鞋盒。<br><span class="cd">箭头有多长，那个方向就放大多少倍。</span>',
+    M: scaleM,
+    ghost: true, autoPlay: true,
+    explore: [
+      { p: 'sx', label: 'x 箭头长度', min: 0.2, max: 2.4, step: 0.05 },
+      { p: 'sy', label: 'y 箭头长度', min: 0.2, max: 2.4, step: 0.05 },
+      { p: 'sz', label: 'z 箭头长度', min: 0.2, max: 2.4, step: 0.05 }
+    ]
+  },
+  {
+    no: '第 5 步 · 旋转',
+    title: '旋转：三支箭头一起转，长度和夹角都不变',
+    text: '绕 Z 转 60°：<span class="cx">x 箭头</span>尖端滑到 (cos60°, sin60°) = (0.50, 0.87)，<span class="cy">y 箭头</span>滑到 (−0.87, 0.50)，<span class="cz">z 箭头站在转轴上不动</span>（第 3 列还是 0,0,1）。<br>配方不变、箭头整体转向 → 盒子像刚体一样跟着转。矩阵里 <b>cos 和 sin 成对出现</b>，det = 1（体积不变）。<br><span class="cd">👉 拖"角度"滑块，看 cos/sin 怎么滑动。</span>',
+    M: rotM,
+    ghost: true, autoPlay: true,
+    sym: 'rot',
+    explore: [
+      { p: 'rotDeg', label: '角度 θ', min: -180, max: 180, step: 1, deg: true },
+      { p: 'shearK', label: '（下一步用）', min: 0, max: 1.5, step: 0.05, hidden: true }
+    ]
+  },
+  {
+    no: '第 6 步 · 斜切',
+    title: '斜切：一支箭头歪掉，扑克牌被推倒',
+    text: '看<span class="cy">第 2 列</span>：y 箭头歪向了 x 方向，变成 (0.85, 1, 0)——其他两支不动。<br>点的 y 读数越高，被 x 方向拖得越远：像<b>一副立着的扑克牌，把上面几层往侧面推</b>——底层不动，越高层推得越多。方盒变成平行六面体，斜塔就是这么斜的。<br>对角线还是 1，但两支箭头不再垂直 → 这不是旋转，是"剪切"。',
+    M: shearM,
+    ghost: true, autoPlay: true,
+    explore: [
+      { p: 'shearK', label: '歪斜程度 k', min: 0, max: 1.5, step: 0.05 }
+    ]
+  },
+  {
+    no: '第 7 步 · 组合',
+    title: '四个动作连乘：S → 斜切 → 旋转 → 平移',
+    text: '游戏里没有"单一变换"——真实物体的矩阵是四个动作<b>连乘</b>：M = T·R·Sh·S（<b>右边的先作用</b>）。<br>按"重播"看完整流程：盒子先被<b>缩放</b>成鞋盒 → 被<b>斜切</b>推歪 → 整体<b>旋转</b> → 最后<b>平移</b>就位。矩阵的每一列是四个动作叠加后的"最终箭头住址"。<br><span class="cd">前面每一步的滑块参数都在这里生效——回去改改再回来重播。</span>',
+    M: function() { return comboKeys()[4]; },
+    keys: comboKeys,
+    ghost: true, autoPlay: true
+  },
+  {
+    no: '第 8 步 · 总结',
+    title: '一张表带走',
+    text: '<b>箭头动作 ↔ 矩阵长相 ↔ 盒子的体验：</b><br><span class="cx">缩放</span>：箭头拉长/压短 → 只有对角线有数 → 方块变鞋盒<br><span class="cy">斜切</span>：一支箭头歪掉 → 对角线全 1、旁边一个数 → 扑克牌推倒<br><span class="cz">旋转</span>：三支箭头一起转 → cos/sin 成对、det=1 → 刚体转动<br><span class="ct">位移</span>：箭头不动、原点搬家 → 只有第 4 列有数 → 全队搬家<br><br><b>读矩阵 = 竖着读列：</b>先看第 4 列（在哪），再看前三列（什么姿态、什么体型）。<br><span class="cd">👉 用下面的滑块把四个动作随便混，右侧矩阵和盒子实时联动——毕业。</span>',
+    M: function() { return comboKeys()[4]; },
+    keys: comboKeys,
+    ghost: true, autoPlay: false,
+    explore: [
+      { p: 'rotDeg', label: '旋转 θ', min: -180, max: 180, step: 1, deg: true },
+      { p: 'shearK', label: '斜切 k', min: 0, max: 1.5, step: 0.05 },
+      { p: 'sx', label: 'x 缩放', min: 0.2, max: 2.4, step: 0.05 },
+      { p: 'tx', label: '平移 x', min: -2.5, max: 2.5, step: 0.05 }
+    ]
+  }
+];
+
+// ============================================================
+// 矩阵表
+// ============================================================
+(function buildMx() {
+  var tab = document.getElementById('mxtab');
+  var cls = ['cx', 'cy', 'cz', 'ct'];
+  for (var r = 0; r < 4; r++) {
+    var tr = document.createElement('tr');
+    for (var c = 0; c < 4; c++) {
+      var td = document.createElement('td');
+      td.className = r === 3 ? 'ghost' : cls[c];
+      td.id = 'mx-' + r + '-' + c;
+      tr.appendChild(td);
+    }
+    tab.appendChild(tr);
+  }
+})();
+function updateMxTable(M, sym) {
+  for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) {
+    document.getElementById('mx-' + r + '-' + c).textContent = f2(M[r * 4 + c]);
+  }
+  // 符号角标（旋转步骤显示 cos/sin 来源）
+  var tags = {};
+  if (sym === 'rot') {
+    var ax = PRM.rotAxis, th = Math.round(PRM.rotDeg);
+    var C = 'cos' + th + '°', S = 'sin' + th + '°', NS = '−sin' + th + '°';
+    if (ax === 'Z') tags = { '0-0': C, '1-0': S, '0-1': NS, '1-1': C, '2-2': '1' };
+    if (ax === 'Y') tags = { '0-0': C, '2-0': '-' + S, '0-2': S, '2-2': C, '1-1': '1' };
+    if (ax === 'X') tags = { '1-1': C, '2-1': S, '1-2': '-' + S, '2-2': C, '0-0': '1' };
+    tags['0-3'] = 'tx'; tags['1-3'] = 'ty'; tags['2-3'] = 'tz';
+  }
+  document.querySelectorAll('#mxtab .mtag').forEach(function(e) { e.remove(); });
+  for (var k in tags) {
+    var td = document.getElementById('mx-' + k);
+    if (td) {
+      var s = document.createElement('span');
+      s.className = 'mtag ' + td.className;
+      s.textContent = tags[k];
+      td.appendChild(s);
+    }
+  }
+  // 列高亮
+  for (var r2 = 0; r2 < 4; r2++) for (var c2 = 0; c2 < 4; c2++) {
+    var td2 = document.getElementById('mx-' + r2 + '-' + c2);
+    td2.classList.toggle('hot', st.hlCol === c2);
+    td2.classList.toggle('dimmed', st.hlCol >= 0 && st.hlCol !== c2);
+  }
+}
+function setHL(col) {
+  st.hlCol = col;
+  if (!STEPS[st.step]) return;
+  updateMxTable(curM(), STEPS[st.step].sym);
+  draw();
+}
+
+// ============================================================
+// 播放器
+// ============================================================
+var playRaf = null;
+function curM() {
+  var s = STEPS[st.step];
+  if (s.keys) {
+    var ks = s.keys();
+    return lerpKeys(ks, st.t);
+  }
+  return lerpM(m4I(), s.M(), st.t);
+}
+function lerpKeys(ks, t) {
+  var n = ks.length - 1;
+  var f = Math.min(0.9999, Math.max(0, t)) * n;
+  var i = Math.floor(f);
+  return lerpM(ks[i], ks[Math.min(n, i + 1)], f - i);
+}
+function play() {
+  if (playRaf) cancelAnimationFrame(playRaf);
+  st.t = 0;
+  var t0 = null, dur = STEPS[st.step].keys ? 4200 : 1900;
+  function frame(ts) {
+    if (!t0) t0 = ts;
+    st.t = Math.min(1, (ts - t0) / dur);
+    draw();
+    if (st.t < 1) playRaf = requestAnimationFrame(frame);
+    else playRaf = null;
+  }
+  playRaf = requestAnimationFrame(frame);
+}
+
+// ============================================================
+// 绘制
+// ============================================================
+function draw() {
+  var s = STEPS[st.step];
+  if (!s) return;
+  var Mt = curM();
+  var ctx = sc.ctx;
+  ctx.clearRect(0, 0, sc.W, sc.H);
+  ctx.fillStyle = PAL.bg; ctx.fillRect(0, 0, sc.W, sc.H);
+  sc.begin();
+  addGroundGrid(sc, 4);
+  drawBox(sc, Mt, { ghost: s.ghost });
+  // 三支箭头（= M 的前三列）+ 原点（第 4 列）
+  var O = [0, 0, 0];
+  var c1 = [Mt[0], Mt[4], Mt[8]], c2 = [Mt[1], Mt[5], Mt[9]], c3 = [Mt[2], Mt[6], Mt[10]], c4 = [Mt[3], Mt[7], Mt[11]];
+  function arrowCol(idx, tip, color) {
+    var dim = st.hlCol >= 0 && st.hlCol !== idx;
+    var hot = st.hlCol === idx;
+    var col = dim ? hexA(color, 0.22) : color;
+    if (hot) addArrow3(sc, O, tip, hexA(color, 0.28), 12);
+    addArrow3(sc, O, tip, col, hot ? 5.5 : 4);
+  }
+  arrowCol(0, c1, PAL.x);
+  arrowCol(1, c2, PAL.y);
+  arrowCol(2, c3, PAL.z);
+  addDot3(sc, c4, st.hlCol === 3 ? 8 : 6, (st.hlCol >= 0 && st.hlCol !== 3) ? hexA(PAL.t, 0.25) : PAL.t, true);
+  addLabel3(sc, c1, 'x̂', PAL.x, 'bold 13px "JetBrains Mono", Consolas, monospace', 8, 0);
+  addLabel3(sc, c2, 'ŷ', PAL.y, 'bold 13px "JetBrains Mono", Consolas, monospace', 8, 0);
+  addLabel3(sc, c3, 'ẑ', PAL.z, 'bold 13px "JetBrains Mono", Consolas, monospace', 8, 0);
+  addLabel3(sc, c4, '原点', PAL.t, 'bold 11.5px "Noto Sans SC","Microsoft YaHei",sans-serif', 9, 15);
+  // 配方阶梯（第 2 步）
+  if (s.ladder) {
+    var P0 = [H, H, H];
+    var b1 = [H, 0, 0], b2 = [H, H, 0];
+    addLine3(sc, O, b1, PAL.x, 2.2, [6, 5]);
+    addLine3(sc, b1, b2, PAL.y, 2.2, [6, 5]);
+    addLine3(sc, b2, P0, PAL.z, 2.2, [6, 5]);
+    addLabel3(sc, b1, '0.55', PAL.x, '11px "JetBrains Mono", Consolas, monospace', -8, 12);
+    addLabel3(sc, b2, '0.55', PAL.y, '11px "JetBrains Mono", Consolas, monospace', 6, 10);
+    addLabel3(sc, P0, '0.55', PAL.z, '11px "JetBrains Mono", Consolas, monospace', 8, -2);
+    addDot3(sc, P0, 5, PAL.text);
+  }
+  sc.flush();
+  updateMxTable(Mt, s.sym);
+  var cap = st.t < 0.999 ? '变形中… t = ' + f2(st.t) : (s.keys ? 'M = T·R·Sh·S（四步连乘的最终结果）' : '当前步骤的目标矩阵');
+  document.getElementById('mx-cap').textContent = cap;
+}
+
+// ============================================================
+// 步骤导航
+// ============================================================
+function goToStep(i) {
+  var old = STEPS[st.step];
+  if (old && old.onLeave) old.onLeave();
+  st.step = Math.max(0, Math.min(STEPS.length - 1, i));
+  var s = STEPS[st.step];
+  document.getElementById('lesson-no').textContent = s.no;
+  document.getElementById('lesson-title').textContent = s.title;
+  document.getElementById('lesson-text').innerHTML = s.text;
+  document.getElementById('step-title').textContent = s.no + ' · ' + s.title;
+  // 导航点
+  var dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  STEPS.forEach(function(_, k) {
+    var d = document.createElement('div');
+    d.className = 'd' + (k === st.step ? ' cur' : (k < st.step ? ' done' : ''));
+    d.textContent = k + 1;
+    d.title = STEPS[k].title;
+    d.addEventListener('click', function() { goToStep(k); });
+    dots.appendChild(d);
+  });
+  document.getElementById('prev').disabled = st.step === 0;
+  document.getElementById('next').disabled = st.step === STEPS.length - 1;
+  // 探索滑块
+  buildExplore(s);
+  // 进入
+  if (s.onEnter) s.onEnter();
+  if (s.autoPlay) play();
+  else { st.t = 1; draw(); }
+}
+function buildExplore(s) {
+  var host = document.getElementById('explore-host');
+  var group = document.getElementById('explore-group');
+  host.innerHTML = '';
+  if (!s.explore || !s.explore.length) { group.style.display = 'none'; return; }
+  group.style.display = '';
+  var visible = s.explore.filter(function(e) { return !e.hidden; });
+  while (host.children.length < Math.ceil(visible.length / 3)) {
+    var row = document.createElement('div');
+    row.className = 'triple';
+    host.appendChild(row);
+  }
+  visible.forEach(function(e, idx) {
+    var row = host.children[Math.floor(idx / 3)];
+    var cell = document.createElement('div');
+    cell.className = 'tcell';
+    var lab = document.createElement('label');
+    var span = document.createElement('span');
+    span.className = 'v';
+    lab.appendChild(document.createTextNode(e.label + ' '));
+    lab.appendChild(span);
+    var inp = document.createElement('input');
+    inp.type = 'range';
+    inp.min = e.min; inp.max = e.max; inp.step = e.step;
+    inp.value = PRM[e.p];
+    function fmt(v) { return e.deg ? v + '°' : (+v).toFixed(2); }
+    span.textContent = fmt(PRM[e.p]);
+    inp.addEventListener('input', function() {
+      PRM[e.p] = +inp.value;
+      span.textContent = fmt(inp.value);
+      st.t = 1;
+      draw();
+    });
+    cell.appendChild(lab);
+    cell.appendChild(inp);
+    row.appendChild(cell);
+  });
+}
+document.getElementById('prev').addEventListener('click', function() { goToStep(st.step - 1); });
+document.getElementById('next').addEventListener('click', function() { goToStep(st.step + 1); });
+document.getElementById('replay').addEventListener('click', play);
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') goToStep(st.step + 1);
+  if (e.key === 'ArrowLeft') goToStep(st.step - 1);
+});
+
+// 画布自适应
+function resizeCanvas() {
+  var r = canvas.getBoundingClientRect();
+  if (r.width < 10 || r.height < 10) return;
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  var w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w; canvas.height = h;
+    sc.W = w; sc.H = h;
+    draw();
+  }
+}
+if ('ResizeObserver' in window) new ResizeObserver(resizeCanvas).observe(canvas);
+window.addEventListener('resize', resizeCanvas);
+
+// 不可见暂停（无连续动画，仅占位）
+refreshPalette();
+REDRAWS.push(draw);
+goToStep(0);
+resizeCanvas();
+setTimeout(function() { goToStep(0); }, 50); // 布局稳定后再进一次，确保尺寸正确
+</script>
+</body>
+</html>
