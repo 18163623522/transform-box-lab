@@ -166,31 +166,70 @@ body {
 .lesson-text .ct { color: var(--accent-purple); font-weight: 650; }
 .lesson-text .cd { color: var(--text-tertiary); }
 
-.mxwrap { display: flex; align-items: stretch; justify-content: center; gap: 0; margin: 6px 0 2px; }
-.mxb { width: 7px; border: 2.5px solid var(--text-secondary); }
-.mxb.l { border-right: none; border-radius: 3px 0 0 3px; }
-.mxb.r { border-left: none; border-radius: 0 3px 3px 0; }
-table.mx { border-collapse: collapse; }
+table.mx { border-collapse: collapse; margin: 0 auto; }
 table.mx td {
-  border: none; padding: 5px 12px; text-align: right;
-  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14px;
-  font-variant-numeric: tabular-nums; color: var(--text-primary); min-width: 70px;
+  border: none; padding: 5px 11px; text-align: right;
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14.5px;
+  font-variant-numeric: tabular-nums; color: var(--text-primary); min-width: 72px;
   transition: background .3s, opacity .3s;
 }
-table.mx td.cx { color: var(--accent-orange); }
-table.mx td.cy { color: var(--accent-green); }
-table.mx td.cz { color: var(--accent-cyan); }
-table.mx td.ct { color: var(--accent-purple); }
-table.mx td.ghost { color: var(--text-tertiary); }
-table.mx td.hot { background: color-mix(in srgb, currentColor 18%, transparent); border-radius: 4px; }
-table.mx td.dimmed { opacity: 0.35; }
-.mx-cap { text-align: center; font-size: 11.5px; color: var(--text-tertiary); margin: 2px 0 4px; }
+/* 列头：一列 = 一支箭头的新家 */
+table.mx td.mxh {
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  font-size: 10.5px; font-weight: 700; text-align: center; line-height: 1.5;
+  padding: 5px 8px 7px; white-space: nowrap;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+  border-bottom: 2.5px solid currentColor;
+  border-radius: 8px 8px 0 0;
+}
+table.mx td.mxh small { font-weight: 500; font-size: 9.5px; opacity: .8; display: block; }
+table.mx td.mxcorner { font-size: 9.5px; color: var(--text-tertiary); text-align: right; padding: 0 6px 2px 0; vertical-align: bottom; white-space: nowrap; }
+table.mx td.mxrl { font-size: 10px; color: var(--text-tertiary); text-align: right; padding-right: 8px; vertical-align: middle; white-space: nowrap; }
+table.mx td.cx { color: var(--accent-orange); background: color-mix(in srgb, var(--accent-orange) 7%, transparent); }
+table.mx td.cy { color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 7%, transparent); }
+table.mx td.cz { color: var(--accent-cyan); background: color-mix(in srgb, var(--accent-cyan) 7%, transparent); }
+table.mx td.ct { color: var(--accent-purple); background: color-mix(in srgb, var(--accent-purple) 7%, transparent); }
+table.mx td.ghost { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 5%, transparent); }
+table.mx td.hot { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 5px; box-shadow: inset 0 0 0 1.5px currentColor; }
+table.mx td.dimmed { opacity: 0.3; }
+.mx-cap { text-align: center; font-size: 11.5px; color: var(--text-tertiary); margin: 5px 0 2px; }
+.mx-read-hint {
+  text-align: center; font-size: 11px; margin-top: 7px; color: var(--text-secondary);
+  background: var(--bg-secondary); border: 1px dashed var(--border-primary); border-radius: var(--radius-sm);
+  padding: 4px 10px;
+}
+.mx-read-hint b { color: var(--text-primary); }
 .mtag {
   display: block; text-align: center; font-size: 9px; margin-top: -3px; margin-bottom: 2px;
   font-family: 'JetBrains Mono', Consolas, monospace; color: var(--text-tertiary); height: 12px;
 }
 .mtag.cx { color: var(--accent-orange); } .mtag.cy { color: var(--accent-green); }
 .mtag.cz { color: var(--accent-cyan); } .mtag.ct { color: var(--accent-purple); }
+
+/* ---- 随堂测验 ---- */
+.qitem { margin-bottom: 14px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-secondary); }
+.qitem:last-child { border-bottom: none; }
+.quiz-q { font-size: 13px; font-weight: 650; color: var(--text-primary); margin: 10px 0 7px; line-height: 1.7; }
+.quiz-q .qn { color: var(--accent-blue); margin-right: 5px; font-family: 'JetBrains Mono', Consolas, monospace; }
+.quiz-opt {
+  display: block; width: 100%; text-align: left; margin-bottom: 5px;
+  background: var(--bg-secondary); border: 1px solid var(--border-primary);
+  color: var(--text-secondary); font-size: 12.5px; padding: 6px 12px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast);
+  font-family: inherit; line-height: 1.6;
+}
+.quiz-opt:hover { border-color: var(--accent-green); color: var(--text-primary); }
+.qitem.answered .quiz-opt { cursor: default; }
+.qitem.answered .quiz-opt:hover { border-color: var(--border-primary); }
+.quiz-opt.right { border-color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 14%, transparent); color: var(--accent-green); font-weight: 650; }
+.quiz-opt.wrong { border-color: var(--accent-red); background: color-mix(in srgb, var(--accent-red) 10%, transparent); color: var(--accent-red); }
+.quiz-explain {
+  display: none; margin-top: 4px; font-size: 12px; color: var(--text-secondary); line-height: 1.75;
+  padding: 8px 12px; background: var(--bg-secondary); border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-blue);
+}
+.qitem.answered .quiz-explain { display: block; }
+.quiz-score { font-size: 12.5px; font-weight: 650; color: var(--accent-blue); margin-top: 6px; }
 
 .triple { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
 .tcell label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); margin-bottom: 2px; }
@@ -242,13 +281,15 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="lesson-text" id="lesson-text"></div>
     </div>
     <div class="pgroup" id="matrix-group">
-      <h3>当前矩阵 M（播放时实时变化）</h3>
-      <div class="mxwrap">
-        <div class="mxb l"></div>
-        <table class="mx" id="mxtab"></table>
-        <div class="mxb r"></div>
-      </div>
+      <h3>当前矩阵 M —— 竖着读，一列 = 一支箭头的新家</h3>
+      <table class="mx" id="mxtab"></table>
+      <div class="mx-read-hint">第 4 列（紫）= <b>原点的新家</b>（物体在哪）　·　前三列 = <b>箭头朝向与长度</b>（什么姿态）　·　行 = 乘出 P′ 的哪个读数</div>
       <div class="mx-cap" id="mx-cap"></div>
+    </div>
+    <div class="pgroup" id="quiz-group" style="display:none">
+      <h3>📝 随堂测验（点选项作答，答错也会亮出正确答案）</h3>
+      <div id="quiz-host"></div>
+      <button class="btn" id="quiz-reset">&#8635; 重做测验</button>
     </div>
     <div class="pgroup" id="explore-group" style="display:none">
       <h3>动手试试（改完立刻生效）</h3>
@@ -649,7 +690,7 @@ var STEPS = [
   {
     no: '第 8 步 · 总结',
     title: '一张表带走',
-    text: '<b>箭头动作 ↔ 矩阵长相 ↔ 盒子的体验：</b><br><span class="cx">缩放</span>：箭头拉长/压短 → 只有对角线有数 → 方块变鞋盒<br><span class="cy">斜切</span>：一支箭头歪掉 → 对角线全 1、旁边一个数 → 扑克牌推倒<br><span class="cz">旋转</span>：三支箭头一起转 → cos/sin 成对、det=1 → 刚体转动<br><span class="ct">位移</span>：箭头不动、原点搬家 → 只有第 4 列有数 → 全队搬家<br><br><b>读矩阵 = 竖着读列：</b>先看第 4 列（在哪），再看前三列（什么姿态、什么体型）。<br><span class="cd">👉 用下面的滑块把四个动作随便混，右侧矩阵和盒子实时联动——毕业。</span>',
+    text: '<b>箭头动作 ↔ 矩阵长相 ↔ 盒子的体验：</b><br><span class="cx">缩放</span>：箭头拉长/压短 → 只有对角线有数 → 方块变鞋盒<br><span class="cy">斜切</span>：一支箭头歪掉 → 对角线全 1、旁边一个数 → 扑克牌推倒<br><span class="cz">旋转</span>：三支箭头一起转 → cos/sin 成对、det=1 → 刚体转动<br><span class="ct">位移</span>：箭头不动、原点搬家 → 只有第 4 列有数 → 全队搬家<br><br><b>读矩阵 = 竖着读列：</b>先看第 4 列（在哪），再看前三列（什么姿态、什么体型）。上面的矩阵表已把列头标好——扫一眼列头再对数字。<br><span class="cd">👉 用下面的滑块把四个动作随便混，右侧矩阵和盒子实时联动。玩熟了就点"下一步"做测验。</span>',
     M: function() { return comboKeys()[4]; },
     keys: comboKeys,
     ghost: true, autoPlay: false,
@@ -659,6 +700,15 @@ var STEPS = [
       { p: 'sx', label: 'x 缩放', min: 0.2, max: 2.4, step: 0.05 },
       { p: 'tx', label: '平移 x', min: -2.5, max: 2.5, step: 0.05 }
     ]
+  },
+  {
+    no: '第 9 步 · 测验',
+    title: '随堂测验：五道题检验成果',
+    text: '八步课全部学完，来做五道选择题验收：<b>每题点一个选项</b>，答对变绿、答错变红并亮出正确答案和解析。<br><span class="cd">卡壳的题回对应步骤重看：读法→第 2 步、平移→第 3 步、缩放→第 4 步、旋转→第 5 步、斜切→第 6 步。全对 = 毕业 🎓</span>',
+    M: function() { return comboKeys()[4]; },
+    keys: comboKeys,
+    ghost: true, autoPlay: false,
+    quiz: true
   }
 ];
 
@@ -668,8 +718,26 @@ var STEPS = [
 (function buildMx() {
   var tab = document.getElementById('mxtab');
   var cls = ['cx', 'cy', 'cz', 'ct'];
+  // 表头行：读↘ + 四个"箭头新家"列头
+  var hr = document.createElement('tr');
+  var corner = document.createElement('td');
+  corner.className = 'mxcorner';
+  corner.textContent = '读↘';
+  hr.appendChild(corner);
+  [['第1列', 'x̂（x箭头）的新家'], ['第2列', 'ŷ（y箭头）的新家'], ['第3列', 'ẑ（z箭头）的新家'], ['第4列', '原点的新家']].forEach(function(t, c) {
+    var th = document.createElement('td');
+    th.className = 'mxh ' + cls[c];
+    th.innerHTML = t[0] + '<small>' + t[1] + '</small>';
+    hr.appendChild(th);
+  });
+  tab.appendChild(hr);
+  var ROWLAB = ['x 读数', 'y 读数', 'z 读数', 'w'];
   for (var r = 0; r < 4; r++) {
     var tr = document.createElement('tr');
+    var rl = document.createElement('td');
+    rl.className = 'mxrl';
+    rl.textContent = ROWLAB[r];
+    tr.appendChild(rl);
     for (var c = 0; c < 4; c++) {
       var td = document.createElement('td');
       td.className = r === 3 ? 'ghost' : cls[c];
@@ -825,11 +893,90 @@ function goToStep(i) {
   document.getElementById('next').disabled = st.step === STEPS.length - 1;
   // 探索滑块
   buildExplore(s);
+  // 测验面板（仅测验步骤显示；每次进入都重置）
+  var qg = document.getElementById('quiz-group');
+  qg.style.display = s.quiz ? '' : 'none';
+  if (s.quiz) buildQuiz();
   // 进入
   if (s.onEnter) s.onEnter();
   if (s.autoPlay) play();
   else { st.t = 1; draw(); }
 }
+
+// ============================================================
+// 随堂测验
+// ============================================================
+var QUIZ = [
+  { q: '盒子只做了平移，矩阵里哪些格子在变？',
+    opts: ['只有第 4 列（原点的新家）', '只有对角线上的 3 个数', '全部 16 个格子'],
+    a: 0,
+    ex: '平移 = 三支箭头全不动、只有原点搬家。前三列（箭头的新家）纹丝不动，只有紫色的第 4 列在变。对照表格列头"第4列·原点的新家"。' },
+  { q: '绕 Z 轴转 90°，x 箭头的新家（第 1 列）变成？',
+    opts: ['(0, 1, 0)', '(1, 0, 0)', '(−1, 0, 0)'],
+    a: 0,
+    ex: 'x 箭头尖端 = (cos90°, sin90°, 0) = (0, 1, 0)——转 90° 后 x 箭头恰好躺在 y 轴上。回第 5 步把 θ 拖到 90° 可亲眼验证。' },
+  { q: '看到对角线是 (2, 0.5, 1)、其余几乎全 0、第 4 列也是 0——这是什么变换？',
+    opts: ['非均匀缩放（x 拉长 2 倍、y 压成一半）', '旋转约 30°', '平移'],
+    a: 0,
+    ex: '只有对角线有数 = 箭头不转向、只变长短；第 4 列为 0 = 没搬家。x 箭头长 2 倍、y 箭头剩一半——方块被捏成鞋盒。' },
+  { q: '斜切（剪切）矩阵的长相特征是？',
+    opts: ['对角线全 1，旁边多出一个非零数', 'cos / sin 成对出现', '只有第 4 列有数'],
+    a: 0,
+    ex: '一支箭头歪掉、其他两支不动：歪掉的那列在对角线上仍是 1，但旁边冒出一个 k——盒子被推成平行六面体，像被推倒的扑克牌。' },
+  { q: '想知道"这个物体被搬到了哪里"，该看矩阵的哪里？',
+    opts: ['第 4 列（原点的新家）', '第 1 列（x 箭头的新家）', '对角线'],
+    a: 0,
+    ex: '第 4 列 = 新原点 = 位置；前三列只管朝向与体型。读矩阵的口诀：先看第 4 列（在哪），再看前三列（什么姿态）。' }
+];
+function buildQuiz() {
+  var host = document.getElementById('quiz-host');
+  host.innerHTML = '';
+  QUIZ.forEach(function(item, qi) {
+    var div = document.createElement('div');
+    div.className = 'qitem';
+    var q = document.createElement('div');
+    q.className = 'quiz-q';
+    q.innerHTML = '<span class="qn">Q' + (qi + 1) + '</span>' + item.q;
+    div.appendChild(q);
+    item.opts.forEach(function(o, oi) {
+      var b = document.createElement('button');
+      b.className = 'quiz-opt';
+      b.textContent = String.fromCharCode(65 + oi) + '. ' + o;
+      b.addEventListener('click', function() {
+        if (div.classList.contains('answered')) return;
+        div.classList.add('answered');
+        var right = oi === item.a;
+        b.classList.add(right ? 'right' : 'wrong');
+        if (!right) div.querySelectorAll('.quiz-opt')[item.a].classList.add('right');
+        updateQuizScore();
+      });
+      div.appendChild(b);
+    });
+    var ex = document.createElement('div');
+    ex.className = 'quiz-explain';
+    ex.textContent = '💡 ' + item.ex;
+    div.appendChild(ex);
+    host.appendChild(div);
+  });
+  var score = document.createElement('div');
+  score.className = 'quiz-score';
+  score.id = 'quiz-score';
+  score.textContent = '已答 0 / ' + QUIZ.length;
+  host.appendChild(score);
+}
+function updateQuizScore() {
+  var all = document.querySelectorAll('#quiz-host .qitem');
+  var done = 0, correct = 0;
+  all.forEach(function(it) {
+    if (it.classList.contains('answered')) {
+      done++;
+      if (it.querySelectorAll('.quiz-opt.wrong').length === 0) correct++;
+    }
+  });
+  var el = document.getElementById('quiz-score');
+  if (el) el.textContent = '已答 ' + done + ' / ' + QUIZ.length + '　·　答对 ' + correct + (done === QUIZ.length ? (correct === QUIZ.length ? '　🎉 全对，毕业！' : '　→ 点"重做测验"再战一轮') : '');
+}
+document.getElementById('quiz-reset').addEventListener('click', buildQuiz);
 function buildExplore(s) {
   var host = document.getElementById('explore-host');
   var group = document.getElementById('explore-group');
