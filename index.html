@@ -158,7 +158,7 @@ body {
 .pgroup > h3 { font-size: 13px; font-weight: 650; color: var(--accent-blue); margin-bottom: 9px; }
 .lesson-no { font-size: 11px; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 4px; }
 .lesson-title { font-size: 17px; font-weight: 750; margin-bottom: 10px; }
-.lesson-text { font-size: 13.5px; color: var(--text-secondary); line-height: 2; }
+.lesson-text { font-size: 14.5px; color: var(--text-secondary); line-height: 2.05; }
 .lesson-text b { color: var(--text-primary); }
 .lesson-text .cx { color: var(--accent-orange); font-weight: 650; }
 .lesson-text .cy { color: var(--accent-green); font-weight: 650; }
@@ -168,40 +168,55 @@ body {
 
 table.mx { border-collapse: collapse; margin: 0 auto; }
 table.mx td {
-  border: none; padding: 5px 11px; text-align: right;
-  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 14.5px;
-  font-variant-numeric: tabular-nums; color: var(--text-primary); min-width: 72px;
+  border: none; padding: 7px 13px; text-align: right;
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 18px;
+  font-variant-numeric: tabular-nums; color: var(--text-primary); min-width: 84px;
   transition: background .3s, opacity .3s;
 }
 /* 列头：一列 = 一支箭头的新家 */
 table.mx td.mxh {
   font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
-  font-size: 10.5px; font-weight: 700; text-align: center; line-height: 1.5;
-  padding: 5px 8px 7px; white-space: nowrap;
+  font-size: 12px; font-weight: 700; text-align: center; line-height: 1.5;
+  padding: 6px 8px 8px; white-space: nowrap;
   background: color-mix(in srgb, currentColor 15%, transparent);
   border-bottom: 2.5px solid currentColor;
   border-radius: 8px 8px 0 0;
 }
-table.mx td.mxh small { font-weight: 500; font-size: 9.5px; opacity: .8; display: block; }
-table.mx td.mxcorner { font-size: 9.5px; color: var(--text-tertiary); text-align: right; padding: 0 6px 2px 0; vertical-align: bottom; white-space: nowrap; }
-table.mx td.mxrl { font-size: 10px; color: var(--text-tertiary); text-align: right; padding-right: 8px; vertical-align: middle; white-space: nowrap; }
+table.mx td.mxh small { font-weight: 500; font-size: 10.5px; opacity: .8; display: block; }
+table.mx td.mxcorner { font-size: 10.5px; color: var(--text-tertiary); text-align: right; padding: 0 6px 2px 0; vertical-align: bottom; white-space: nowrap; }
+table.mx td.mxrl { font-size: 11.5px; color: var(--text-tertiary); text-align: right; padding-right: 8px; vertical-align: middle; white-space: nowrap; }
 table.mx td.cx { color: var(--accent-orange); background: color-mix(in srgb, var(--accent-orange) 7%, transparent); }
 table.mx td.cy { color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 7%, transparent); }
 table.mx td.cz { color: var(--accent-cyan); background: color-mix(in srgb, var(--accent-cyan) 7%, transparent); }
 table.mx td.ct { color: var(--accent-purple); background: color-mix(in srgb, var(--accent-purple) 7%, transparent); }
 table.mx td.ghost { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 5%, transparent); }
+/* 参与变化：数值离开单位矩阵的格子 —— 加深底色 + 底部粗下划线 */
+table.mx td.chg { background: color-mix(in srgb, currentColor 22%, transparent); box-shadow: inset 0 -4px 0 currentColor; }
 table.mx td.hot { background: color-mix(in srgb, currentColor 26%, transparent); border-radius: 5px; box-shadow: inset 0 0 0 1.5px currentColor; }
 table.mx td.dimmed { opacity: 0.3; }
-.mx-cap { text-align: center; font-size: 11.5px; color: var(--text-tertiary); margin: 5px 0 2px; }
+.mx-cap { text-align: center; font-size: 12.5px; color: var(--text-tertiary); margin: 6px 0 2px; }
 .mx-read-hint {
-  text-align: center; font-size: 11px; margin-top: 7px; color: var(--text-secondary);
+  text-align: center; font-size: 12px; margin-top: 8px; color: var(--text-secondary);
   background: var(--bg-secondary); border: 1px dashed var(--border-primary); border-radius: var(--radius-sm);
-  padding: 4px 10px;
+  padding: 5px 10px;
 }
 .mx-read-hint b { color: var(--text-primary); }
+/* "为什么是这些数值"解说框 */
+.why-box {
+  margin-top: 9px; border-left: 3.5px solid var(--accent-blue);
+  background: color-mix(in srgb, var(--accent-blue) 6%, var(--bg-secondary));
+  border-radius: var(--radius-sm); padding: 10px 13px;
+  font-size: 13.5px; color: var(--text-secondary); line-height: 1.95;
+}
+.why-box b { color: var(--text-primary); }
+.why-box .cx { color: var(--accent-orange); font-weight: 650; }
+.why-box .cy { color: var(--accent-green); font-weight: 650; }
+.why-box .cz { color: var(--accent-cyan); font-weight: 650; }
+.why-box .ct { color: var(--accent-purple); font-weight: 650; }
+.why-head { font-size: 11.5px; font-weight: 750; color: var(--accent-blue); letter-spacing: .5px; margin-bottom: 3px; }
 .mtag {
-  display: block; text-align: center; font-size: 9px; margin-top: -3px; margin-bottom: 2px;
-  font-family: 'JetBrains Mono', Consolas, monospace; color: var(--text-tertiary); height: 12px;
+  display: block; text-align: center; font-size: 10px; margin-top: -2px; margin-bottom: 3px;
+  font-family: 'JetBrains Mono', Consolas, monospace; color: var(--text-tertiary); height: 14px; white-space: nowrap;
 }
 .mtag.cx { color: var(--accent-orange); } .mtag.cy { color: var(--accent-green); }
 .mtag.cz { color: var(--accent-cyan); } .mtag.ct { color: var(--accent-purple); }
@@ -209,12 +224,12 @@ table.mx td.dimmed { opacity: 0.3; }
 /* ---- 随堂测验 ---- */
 .qitem { margin-bottom: 14px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-secondary); }
 .qitem:last-child { border-bottom: none; }
-.quiz-q { font-size: 13px; font-weight: 650; color: var(--text-primary); margin: 10px 0 7px; line-height: 1.7; }
+.quiz-q { font-size: 14px; font-weight: 650; color: var(--text-primary); margin: 10px 0 7px; line-height: 1.7; }
 .quiz-q .qn { color: var(--accent-blue); margin-right: 5px; font-family: 'JetBrains Mono', Consolas, monospace; }
 .quiz-opt {
   display: block; width: 100%; text-align: left; margin-bottom: 5px;
   background: var(--bg-secondary); border: 1px solid var(--border-primary);
-  color: var(--text-secondary); font-size: 12.5px; padding: 6px 12px;
+  color: var(--text-secondary); font-size: 13.5px; padding: 7px 12px;
   border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast);
   font-family: inherit; line-height: 1.6;
 }
@@ -224,7 +239,7 @@ table.mx td.dimmed { opacity: 0.3; }
 .quiz-opt.right { border-color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 14%, transparent); color: var(--accent-green); font-weight: 650; }
 .quiz-opt.wrong { border-color: var(--accent-red); background: color-mix(in srgb, var(--accent-red) 10%, transparent); color: var(--accent-red); }
 .quiz-explain {
-  display: none; margin-top: 4px; font-size: 12px; color: var(--text-secondary); line-height: 1.75;
+  display: none; margin-top: 4px; font-size: 13px; color: var(--text-secondary); line-height: 1.8;
   padding: 8px 12px; background: var(--bg-secondary); border-radius: var(--radius-sm);
   border-left: 3px solid var(--accent-blue);
 }
@@ -284,6 +299,7 @@ input[type="range"]::-webkit-slider-thumb {
       <h3>当前矩阵 M —— 竖着读，一列 = 一支箭头的新家</h3>
       <table class="mx" id="mxtab"></table>
       <div class="mx-read-hint">第 4 列（紫）= <b>原点的新家</b>（物体在哪）　·　前三列 = <b>箭头朝向与长度</b>（什么姿态）　·　行 = 乘出 P′ 的哪个读数</div>
+      <div class="why-box" id="why-box"></div>
       <div class="mx-cap" id="mx-cap"></div>
     </div>
     <div class="pgroup" id="quiz-group" style="display:none">
@@ -613,7 +629,7 @@ var STEPS = [
   {
     no: '第 1 步 · 热身',
     title: '盒子的身份证：三支箭头 + 一个原点',
-    text: '矩阵从不直接"搬"东西。它管理的只有四样东西——<span class="cx">x 箭头</span>、<span class="cy">y 箭头</span>、<span class="cz">z 箭头</span>和<span class="ct">原点</span>（蓝圈），钉在盒子身上。<br>现在矩阵是<b>单位矩阵</b>（什么都没发生）：三支箭头互相垂直、长度都是 1，原点在世界中心。矩阵的每一列，就是对应箭头"现在住哪"的登记。<br><span class="cd">👉 拖动画布转转视角，认一认三支箭头和盒子三个着色的面（橙=+x，绿=+y，青=+z）。</span>',
+    text: '矩阵从不直接"搬"东西。它管理的只有四样东西——<span class="cx">x 箭头</span>、<span class="cy">y 箭头</span>、<span class="cz">z 箭头</span>和<span class="ct">原点</span>（蓝圈），钉在盒子身上。<br>现在矩阵是<b>单位矩阵</b>（什么都没发生）：对角线全 1、其余全 0。<b>每个 1 = "这支箭头长度 1、指向自己的正方向"；每个 0 = "在那个方向上没有分量"</b>——x 箭头不偏 y 不偏 z，所以第 1 列是 (1,0,0)；第 4 列全 0 = 原点还在世界中心没搬家。<br><span class="cd">👉 拖动画布转转视角，认一认三支箭头和盒子三个着色的面（橙=+x，绿=+y，青=+z）。矩阵下方蓝框里有用盒角验证"原样奉还"的完整解释。</span>',
     M: function() { return m4I(); },
     ghost: false, autoPlay: false
   },
@@ -638,6 +654,7 @@ var STEPS = [
     title: '平移：三支箭头全不动，只有原点搬家',
     text: '看矩阵：只有<span class="ct">第 4 列</span>在变（前三列纹丝不动）。<br>箭头一根都没转、没变长——盒子形状完全不变，但因为<b>原点搬到了 (1.3, 0.7, 0.4)</b>，整个盒子跟着整体平移。<br>这就是为什么平移需要第 4 列：光靠"配方混合"（前三列）变不出凭空的"+1.3"。',
     M: transM,
+    tags: function() { return { '0-3': 'tx=' + f2(PRM.tx), '1-3': 'ty=' + f2(PRM.ty), '2-3': 'tz=' + f2(PRM.tz), '0-0': '不动', '1-1': '不动', '2-2': '不动' }; },
     ghost: true, autoPlay: true,
     explore: [
       { p: 'tx', label: '平移 x', min: -2.5, max: 2.5, step: 0.05 },
@@ -650,6 +667,7 @@ var STEPS = [
     title: '缩放：箭头不转向，只是变长 / 变短',
     text: '看矩阵：只有<b>对角线</b>在变——<span class="cx">x 箭头拉长到 1.55 倍</span>（盒子 x 方向变长），<span class="cy">y 箭头压到 0.62</span>（盒子变扁）。<br>配方不变，但"一份箭头"的长度变了：0.55 份 × 1.55 = 走得更远。方块被捏成鞋盒。<br><span class="cd">箭头有多长，那个方向就放大多少倍。</span>',
     M: scaleM,
+    tags: function() { return { '0-0': 'sx=' + f2(PRM.sx), '1-1': 'sy=' + f2(PRM.sy), '2-2': 'sz=' + f2(PRM.sz) }; },
     ghost: true, autoPlay: true,
     explore: [
       { p: 'sx', label: 'x 箭头长度', min: 0.2, max: 2.4, step: 0.05 },
@@ -663,7 +681,13 @@ var STEPS = [
     text: '绕 Z 转 60°：<span class="cx">x 箭头</span>尖端滑到 (cos60°, sin60°) = (0.50, 0.87)，<span class="cy">y 箭头</span>滑到 (−0.87, 0.50)，<span class="cz">z 箭头站在转轴上不动</span>（第 3 列还是 0,0,1）。<br>配方不变、箭头整体转向 → 盒子像刚体一样跟着转。矩阵里 <b>cos 和 sin 成对出现</b>，det = 1（体积不变）。<br><span class="cd">👉 拖"角度"滑块，看 cos/sin 怎么滑动。</span>',
     M: rotM,
     ghost: true, autoPlay: true,
-    sym: 'rot',
+    tags: function() {
+      var ax = PRM.rotAxis, th = Math.round(PRM.rotDeg);
+      var C = 'cos' + th + '°', S = 'sin' + th + '°';
+      if (ax === 'Z') return { '0-0': C, '1-0': S, '0-1': '−' + S, '1-1': C, '2-2': '转轴·不动', '0-3': '不搬家', '1-3': '·', '2-3': '·' };
+      if (ax === 'Y') return { '0-0': C, '2-0': '−' + S, '0-2': S, '2-2': C, '1-1': '转轴·不动' };
+      return { '1-1': C, '2-1': S, '1-2': '−' + S, '2-2': C, '0-0': '转轴·不动' };
+    },
     explore: [
       { p: 'rotDeg', label: '角度 θ', min: -180, max: 180, step: 1, deg: true },
       { p: 'shearK', label: '（下一步用）', min: 0, max: 1.5, step: 0.05, hidden: true }
@@ -674,6 +698,7 @@ var STEPS = [
     title: '斜切：一支箭头歪掉，扑克牌被推倒',
     text: '看<span class="cy">第 2 列</span>：y 箭头歪向了 x 方向，变成 (0.85, 1, 0)——其他两支不动。<br>点的 y 读数越高，被 x 方向拖得越远：像<b>一副立着的扑克牌，把上面几层往侧面推</b>——底层不动，越高层推得越多。方盒变成平行六面体，斜塔就是这么斜的。<br>对角线还是 1，但两支箭头不再垂直 → 这不是旋转，是"剪切"。',
     M: shearM,
+    tags: function() { return { '0-1': 'k=' + f2(PRM.shearK) + ' 歪向x', '1-1': '长度不变', '0-0': '不动', '2-2': '不动' }; },
     ghost: true, autoPlay: true,
     explore: [
       { p: 'shearK', label: '歪斜程度 k', min: 0, max: 1.5, step: 0.05 }
@@ -685,6 +710,7 @@ var STEPS = [
     text: '游戏里没有"单一变换"——真实物体的矩阵是四个动作<b>连乘</b>：M = T·R·Sh·S（<b>右边的先作用</b>）。<br>按"重播"看完整流程：盒子先被<b>缩放</b>成鞋盒 → 被<b>斜切</b>推歪 → 整体<b>旋转</b> → 最后<b>平移</b>就位。矩阵的每一列是四个动作叠加后的"最终箭头住址"。<br><span class="cd">前面每一步的滑块参数都在这里生效——回去改改再回来重播。</span>',
     M: function() { return comboKeys()[4]; },
     keys: comboKeys,
+    tags: function() { return { '0-3': 'T:tx=' + f2(PRM.tx), '1-3': 'T:ty=' + f2(PRM.ty), '2-3': 'T:tz=' + f2(PRM.tz) }; },
     ghost: true, autoPlay: true
   },
   {
@@ -747,41 +773,68 @@ var STEPS = [
     tab.appendChild(tr);
   }
 })();
-function updateMxTable(M, sym) {
+function updateMxTable(M) {
+  var ID = m4I();
+  var step = STEPS[st.step] || {};
   for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) {
-    document.getElementById('mx-' + r + '-' + c).textContent = f2(M[r * 4 + c]);
+    var td = document.getElementById('mx-' + r + '-' + c);
+    td.textContent = f2(M[r * 4 + c]);
+    // 参与变化高亮：数值离开单位矩阵的格子加下划线+加深底色
+    td.classList.toggle('chg', Math.abs(M[r * 4 + c] - ID[r * 4 + c]) > 5e-3);
   }
-  // 符号角标（旋转步骤显示 cos/sin 来源）
-  var tags = {};
-  if (sym === 'rot') {
-    var ax = PRM.rotAxis, th = Math.round(PRM.rotDeg);
-    var C = 'cos' + th + '°', S = 'sin' + th + '°', NS = '−sin' + th + '°';
-    if (ax === 'Z') tags = { '0-0': C, '1-0': S, '0-1': NS, '1-1': C, '2-2': '1' };
-    if (ax === 'Y') tags = { '0-0': C, '2-0': '-' + S, '0-2': S, '2-2': C, '1-1': '1' };
-    if (ax === 'X') tags = { '1-1': C, '2-1': S, '1-2': '-' + S, '2-2': C, '0-0': '1' };
-    tags['0-3'] = 'tx'; tags['1-3'] = 'ty'; tags['2-3'] = 'tz';
-  }
+  // 每步自己的"数值来源"角标（动态值）
+  var tags = step.tags ? step.tags() : {};
   document.querySelectorAll('#mxtab .mtag').forEach(function(e) { e.remove(); });
   for (var k in tags) {
-    var td = document.getElementById('mx-' + k);
-    if (td) {
+    var td2 = document.getElementById('mx-' + k);
+    if (td2) {
       var s = document.createElement('span');
-      s.className = 'mtag ' + td.className;
+      s.className = 'mtag ' + td2.className;
       s.textContent = tags[k];
-      td.appendChild(s);
+      td2.appendChild(s);
     }
   }
   // 列高亮
   for (var r2 = 0; r2 < 4; r2++) for (var c2 = 0; c2 < 4; c2++) {
-    var td2 = document.getElementById('mx-' + r2 + '-' + c2);
-    td2.classList.toggle('hot', st.hlCol === c2);
-    td2.classList.toggle('dimmed', st.hlCol >= 0 && st.hlCol !== c2);
+    var td3 = document.getElementById('mx-' + r2 + '-' + c2);
+    td3.classList.toggle('hot', st.hlCol === c2);
+    td3.classList.toggle('dimmed', st.hlCol >= 0 && st.hlCol !== c2);
   }
+}
+// "为什么是这些数值"动态解说：按当前步骤 + 滑块实值解释每个数的来源
+function whyHTML() {
+  var i = st.step;
+  var th = Math.round(PRM.rotDeg), rad = PRM.rotDeg * Math.PI / 180;
+  var C = f2(Math.cos(rad)), S = f2(Math.sin(rad));
+  function col(v) { return '(' + v.join(', ') + ')'; }
+  if (i === 0 || i === 1) {
+    return '<b>为什么恰好是 1 和 0：</b>每一列 = 一支箭头的新家。没做任何变换时，x 箭头指向正 x、长度 1 → 尖端就是 (1,0,0) → <span class="cx">第1列</span>；y、z 同理。<b>对角线的 1 = "箭头长度 1、指向自己的方向"；0 = "在那个方向上一丁点分量都没有"</b>。<span class="ct">第4列=(0,0,0)：原点没搬家</span>。<br>验证"什么都不做"：盒角 (0.55, 0.55, 0.55) 重算配方 = 0.55×(1,0,0) + 0.55×(0,1,0) + 0.55×(0,0,1) = <b>原样奉还</b>。只要任何一个 1 变掉、或一个 0 变成非零，就必有箭头被转动/拉长/歪掉——点就会搬家。';
+  }
+  if (i === 2) {
+    return '<b>为什么只有第4列在动：</b>滑块把原点搬到 (' + f2(PRM.tx) + ', ' + f2(PRM.ty) + ', ' + f2(PRM.tz) + ') —— 这三个数被<b>直接抄进第4列</b>（tx=' + f2(PRM.tx) + '、ty=' + f2(PRM.ty) + '、tz=' + f2(PRM.tz) + '）。前三列恒为 (1,0,0)(0,1,0)(0,0,1)，因为<b>平移不碰箭头</b>——箭头不动，盒子形状就不变，只是整体搬家。';
+  }
+  if (i === 3) {
+    return '<b>为什么只有对角线在动：</b>箭头不转向、只变长 —— <span class="cx">x 箭头拉到 ' + f2(PRM.sx) + ' 倍 → 第1列=(' + f2(PRM.sx) + ', 0, 0)</span>；<span class="cy">y 箭头剩 ' + f2(PRM.sy) + ' → 第2列=(0, ' + f2(PRM.sy) + ', 0)</span>；<span class="cz">z 箭头 ' + f2(PRM.sz) + ' → 第3列=(0, 0, ' + f2(PRM.sz) + ')</span>。<b>列里非对角线位置是 0，因为箭头没有歪向别的方向。</b>第4列=0：没搬家。';
+  }
+  if (i === 4) {
+    var ax = PRM.rotAxis;
+    var l1 = ax === 'Z' ? col([C, S, '0']) : ax === 'Y' ? col([C, '0', '−' + S]) : col(['1', '0', '0']);
+    var l2 = ax === 'Z' ? col(['−' + S, C, '0']) : ax === 'Y' ? col(['0', '1', '0']) : col(['0', C, '−' + S]);
+    var l3 = ax === 'Z' ? col(['0', '0', '1']) : ax === 'Y' ? col([S, '0', C]) : col(['0', S, C]);
+    var axisArrow = ax === 'Z' ? '第3列（z 箭头站在转轴上）' : ax === 'Y' ? '第2列（y 箭头站在转轴上）' : '第1列（x 箭头站在转轴上）';
+    return '<b>为什么是这几组数：</b>θ=' + th + '° → cos' + th + '°=' + C + '、sin' + th + '°=' + S + '（单位箭头转 ' + th + '° 后尖端的水平/竖直读数）。<span class="cx">x 箭头尖端 → 第1列=' + l1 + '</span>；<span class="cy">y 箭头追赶 90° → 第2列=' + l2 + '</span>；' + axisArrow + '保持不动 → ' + (ax === 'Z' ? '第3列' : ax === 'Y' ? '第2列' : '第1列') + ' 里只有 1；绕自己的原点转 → 第4列=0，家不搬。';
+  }
+  if (i === 5) {
+    return '<b>为什么第2列多出一个 ' + f2(PRM.shearK) + '：</b>滑块 k 把 y 箭头<b>歪向 x 方向</b>，它的新家变成 (' + f2(PRM.shearK) + ', 1, 0) —— 对角线仍是 1（长度没变多少），旁边冒出的 k 就是"歪了多少"。效果：y 越高的点被拖得越远（x′ = x + ' + f2(PRM.shearK) + '·y），盒子被推成平行六面体。x、z 箭头不动 → 第1、3列不变。';
+  }
+  // 组合（第7/8步）与测验步
+  var RShS = m4mul(rotM(), m4mul(shearM(), scaleM()));
+  return '<b>为什么数字变成"混合物"：</b>最终每一列 = 四个动作依次作用后的箭头住址 —— 先被 S 拉长/压短（对角线成分）→ 被 Sh 推歪（旁边的 k 成分）→ 被 R 转向（cos/sin 成分）→ 原点最后被 T 搬走。<span class="cx">如第1列=' + col([f2(RShS[0]), f2(RShS[4]), f2(RShS[8])]) + '，同时混着 sx=' + f2(PRM.sx) + '、k=' + f2(PRM.shearK) + '、cos' + th + '°=' + C + ' 的乘积</span>；<span class="ct">第4列=(' + f2(PRM.tx) + ', ' + f2(PRM.ty) + ', ' + f2(PRM.tz) + ') 纯来自平移 T</span>。拆不开看的，回第 3~6 步逐个单独玩。';
 }
 function setHL(col) {
   st.hlCol = col;
   if (!STEPS[st.step]) return;
-  updateMxTable(curM(), STEPS[st.step].sym);
+  updateMxTable(curM());
   draw();
 }
 
@@ -861,8 +914,9 @@ function draw() {
     addDot3(sc, P0, 5, PAL.text);
   }
   sc.flush();
-  updateMxTable(Mt, s.sym);
-  var cap = st.t < 0.999 ? '变形中… t = ' + f2(st.t) : (s.keys ? 'M = T·R·Sh·S（四步连乘的最终结果）' : '当前步骤的目标矩阵');
+  updateMxTable(Mt);
+  document.getElementById('why-box').innerHTML = whyHTML();
+  var cap = st.t < 0.999 ? '变形中… t = ' + f2(st.t) + '（亮色格子 = 正在离开单位矩阵）' : (s.keys ? 'M = T·R·Sh·S（四步连乘的最终结果）' : '当前步骤的目标矩阵 · 底部划线的格子 = 参与了本步变化');
   document.getElementById('mx-cap').textContent = cap;
 }
 
