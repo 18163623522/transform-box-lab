@@ -96,7 +96,7 @@ body {
 }
 .theme-toggle:hover { color: var(--accent-blue); border-color: var(--border-accent); }
 
-.app { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 16px; padding: 14px 18px; }
+.app { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 16px; padding: 14px 18px; }
 @media (max-width: 980px) {
   body { display: block; overflow: auto; height: auto; }
   .app { display: flex; flex-direction: column; }
@@ -166,25 +166,25 @@ body {
 .lesson-text .ct { color: var(--accent-purple); font-weight: 650; }
 .lesson-text .cd { color: var(--text-tertiary); }
 
-table.mx { border-collapse: collapse; margin: 0 auto; }
+table.mx { border-collapse: collapse; margin: 0 auto; max-width: 100%; }
 table.mx td {
-  border: none; padding: 7px 13px; text-align: right;
-  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 18px;
-  font-variant-numeric: tabular-nums; color: var(--text-primary); min-width: 84px;
+  border: none; padding: 6px 12px; text-align: right;
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 17px;
+  font-variant-numeric: tabular-nums; color: var(--text-primary); min-width: 52px;
   transition: background .3s, opacity .3s;
 }
 /* 列头：一列 = 一支箭头的新家 */
 table.mx td.mxh {
   font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
-  font-size: 12px; font-weight: 700; text-align: center; line-height: 1.5;
-  padding: 6px 8px 8px; white-space: nowrap;
+  font-size: 11.5px; font-weight: 700; text-align: center; line-height: 1.5;
+  padding: 5px 6px 7px; white-space: nowrap;
   background: color-mix(in srgb, currentColor 15%, transparent);
   border-bottom: 2.5px solid currentColor;
   border-radius: 8px 8px 0 0;
 }
-table.mx td.mxh small { font-weight: 500; font-size: 10.5px; opacity: .8; display: block; }
+table.mx td.mxh small { font-weight: 500; font-size: 10px; opacity: .8; display: block; white-space: nowrap; }
 table.mx td.mxcorner { font-size: 10.5px; color: var(--text-tertiary); text-align: right; padding: 0 6px 2px 0; vertical-align: bottom; white-space: nowrap; }
-table.mx td.mxrl { font-size: 11.5px; color: var(--text-tertiary); text-align: right; padding-right: 8px; vertical-align: middle; white-space: nowrap; }
+table.mx td.mxrl { font-size: 11px; color: var(--text-tertiary); text-align: right; padding-right: 7px; padding-left: 0; vertical-align: middle; white-space: nowrap; }
 table.mx td.cx { color: var(--accent-orange); background: color-mix(in srgb, var(--accent-orange) 7%, transparent); }
 table.mx td.cy { color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 7%, transparent); }
 table.mx td.cz { color: var(--accent-cyan); background: color-mix(in srgb, var(--accent-cyan) 7%, transparent); }
@@ -215,7 +215,7 @@ table.mx td.dimmed { opacity: 0.3; }
 .why-box .ct { color: var(--accent-purple); font-weight: 650; }
 .why-head { font-size: 11.5px; font-weight: 750; color: var(--accent-blue); letter-spacing: .5px; margin-bottom: 3px; }
 .mtag {
-  display: block; text-align: center; font-size: 10px; margin-top: -2px; margin-bottom: 3px;
+  display: block; text-align: center; font-size: 9.5px; margin-top: -2px; margin-bottom: 3px;
   font-family: 'JetBrains Mono', Consolas, monospace; color: var(--text-tertiary); height: 14px; white-space: nowrap;
 }
 .mtag.cx { color: var(--accent-orange); } .mtag.cy { color: var(--accent-green); }
@@ -297,7 +297,7 @@ input[type="range"]::-webkit-slider-thumb {
     </div>
     <div class="pgroup" id="matrix-group">
       <h3>当前矩阵 M —— 竖着读，一列 = 一支箭头的新家</h3>
-      <table class="mx" id="mxtab"></table>
+      <div style="overflow-x:auto"><table class="mx" id="mxtab"></table></div>
       <div class="mx-read-hint">第 4 列（紫）= <b>原点的新家</b>（物体在哪）　·　前三列 = <b>箭头朝向与长度</b>（什么姿态）　·　行 = 乘出 P′ 的哪个读数</div>
       <div class="why-box" id="why-box"></div>
       <div class="mx-cap" id="mx-cap"></div>
@@ -750,7 +750,7 @@ var STEPS = [
   corner.className = 'mxcorner';
   corner.textContent = '读↘';
   hr.appendChild(corner);
-  [['第1列', 'x̂（x箭头）的新家'], ['第2列', 'ŷ（y箭头）的新家'], ['第3列', 'ẑ（z箭头）的新家'], ['第4列', '原点的新家']].forEach(function(t, c) {
+  [['第1列', 'x̂ 新家'], ['第2列', 'ŷ 新家'], ['第3列', 'ẑ 新家'], ['第4列', '原点新家']].forEach(function(t, c) {
     var th = document.createElement('td');
     th.className = 'mxh ' + cls[c];
     th.innerHTML = t[0] + '<small>' + t[1] + '</small>';
