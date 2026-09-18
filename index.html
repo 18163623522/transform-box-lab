@@ -541,11 +541,23 @@ function addLabel3(sc, p, text, color, font, dx, dy) {
 }
 function addGroundGrid(sc, half) {
   half = half || 4;
-  for (var i = -half; i <= half; i++) {
+  var i;
+  for (i = -half; i <= half; i++) {
     var col = (i === 0) ? PAL.axis : PAL.grid;
     var lw = (i === 0) ? 1.6 : 1;
     addLine3(sc, [i, -half, 0], [i, half, 0], col, lw);
     addLine3(sc, [-half, i, 0], [half, i, 0], col, lw);
+  }
+  // 数值刻度：x / y / z 轴整数位置标数字，方便读坐标
+  var F = '10px "JetBrains Mono", Consolas, monospace';
+  for (i = 1; i <= half; i++) {
+    addLabel3(sc, [i, 0, 0], String(i), PAL.dim, F, -3, 10);      // x 正
+    addLabel3(sc, [-i, 0, 0], '-' + i, PAL.dim, F, -3, 10);       // x 负
+    addLabel3(sc, [0, i, 0], String(i), PAL.dim, F, -12, 0);      // y 正
+    addLabel3(sc, [0, -i, 0], '-' + i, PAL.dim, F, -12, 0);       // y 负
+  }
+  for (i = 1; i <= Math.min(half, 3); i++) {
+    addLabel3(sc, [0, 0, i], String(i), PAL.dim, F, -12, 0);      // z 轴（竖直）
   }
 }
 
@@ -678,7 +690,7 @@ var STEPS = [
   {
     no: '第 5 步 · 旋转',
     title: '旋转：三支箭头一起转，长度和夹角都不变',
-    text: '绕 Z 转 60°：<span class="cx">x 箭头</span>尖端滑到 (cos60°, sin60°) = (0.50, 0.87)，<span class="cy">y 箭头</span>滑到 (−0.87, 0.50)，<span class="cz">z 箭头站在转轴上不动</span>（第 3 列还是 0,0,1）。<br>配方不变、箭头整体转向 → 盒子像刚体一样跟着转。矩阵里 <b>cos 和 sin 成对出现</b>，det = 1（体积不变）。<br><span class="cd">👉 拖"角度"滑块，看 cos/sin 怎么滑动。</span>',
+    text: '绕当前选择的轴（默认 <b>Z</b>）转 60°：<span class="cx">x 箭头</span>尖端滑到 (cos60°, sin60°) = (0.50, 0.87)，<span class="cy">y 箭头</span>滑到 (−0.87, 0.50)，<span class="cz">站在转轴上的那支箭头不动</span>（它的列还是 0,0,1）。<br>配方不变、箭头整体转向 → 盒子像刚体一样跟着转。矩阵里 <b>cos 和 sin 成对出现</b>，det = 1（体积不变）。<br><span class="cd">👉 拖"角度"滑块看 cos/sin 怎么滑动；点 <b>X / Y / Z</b> 按钮换转轴——看哪支箭头站着不动、哪两支互相追赶。</span>',
     M: rotM,
     ghost: true, autoPlay: true,
     tags: function() {
@@ -690,6 +702,7 @@ var STEPS = [
     },
     explore: [
       { p: 'rotDeg', label: '角度 θ', min: -180, max: 180, step: 1, deg: true },
+      { p: 'rotAxis', label: '旋转轴', btns: ['X', 'Y', 'Z'] },
       { p: 'shearK', label: '（下一步用）', min: 0, max: 1.5, step: 0.05, hidden: true }
     ]
   },
@@ -1048,9 +1061,34 @@ function buildExplore(s) {
     var cell = document.createElement('div');
     cell.className = 'tcell';
     var lab = document.createElement('label');
+    lab.appendChild(document.createTextNode(e.label + ' '));
+    // 按钮组控件（如旋转轴 X/Y/Z）
+    if (e.btns) {
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;gap:5px;margin-top:3px';
+      e.btns.forEach(function(bv) {
+        var b = document.createElement('button');
+        b.className = 'btn';
+        b.style.margin = '0';
+        b.style.flex = '1';
+        b.style.padding = '4px 0';
+        b.textContent = bv;
+        b.classList.toggle('active', PRM[e.p] === bv);
+        b.addEventListener('click', function() {
+          PRM[e.p] = bv;
+          wrap.querySelectorAll('.btn').forEach(function(x) { x.classList.toggle('active', x.textContent === bv); });
+          st.t = 1;
+          draw();
+        });
+        wrap.appendChild(b);
+      });
+      cell.appendChild(lab);
+      cell.appendChild(wrap);
+      row.appendChild(cell);
+      return;
+    }
     var span = document.createElement('span');
     span.className = 'v';
-    lab.appendChild(document.createTextNode(e.label + ' '));
     lab.appendChild(span);
     var inp = document.createElement('input');
     inp.type = 'range';
