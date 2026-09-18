@@ -299,6 +299,7 @@ input[type="range"]::-webkit-slider-thumb {
       <h3>当前矩阵 M —— 竖着读，一列 = 一支箭头的新家</h3>
       <div style="overflow-x:auto"><table class="mx" id="mxtab"></table></div>
       <div class="mx-read-hint">第 4 列（紫）= <b>原点的新家</b>（物体在哪）　·　前三列 = <b>箭头朝向与长度</b>（什么姿态）　·　行 = 乘出 P′ 的哪个读数</div>
+      <div class="mx-read-hint" style="text-align:left"><b>最后一行 w 是干嘛的：</b>齐次坐标的"脚手架"，恒为灰色 0,0,0,<b>1</b>，不用动它 ——<br>· 前三个 <b>0</b>：平移住在第 4 列，这排 0 保证"搬家"不会反向污染三支箭头（箭头是纯方向，搬家不该改变朝向）；<br>· 最后的 <b>1</b>：让第四分量 w=1 的点能"接住"第 4 列的平移（1×tx+1×ty+1×tz 才加得进去）。<br>由此还能看出一个重要区别：<b>位置 w=1</b>（会被搬家），<b>纯方向 w=0</b>（平移对它无效）——法线、朝向这类"方向"就是靠 w=0 区别于位置的。透视投影则是故意改写这一行，除以 w 产生近大远小。</div>
       <div class="why-box" id="why-box"></div>
       <div class="mx-cap" id="mx-cap"></div>
     </div>
@@ -624,7 +625,7 @@ function drawBox(sc, Mt, opts) {
 // ============================================================
 var canvas = document.getElementById('cv');
 var sc = make3D(canvas, { yaw: -55, pitch: 24, dist: 7.2, target: [0.35, 0.15, 0.3] });
-var PRM = { tx: 1.3, ty: 0.7, tz: 0.4, sx: 1.55, sy: 0.62, sz: 1.0, rotDeg: 60, rotAxis: 'Z', shearK: 0.85 };
+var PRM = { tx: 1.3, ty: 0.7, tz: 0.4, sx: 1.55, sy: 0.62, sz: 1.0, rotDeg: 60, rotAxis: 'Z', shearK: 0.85, scaleMode: '对称' };
 var st = { step: 0, t: 1, hlCol: -1, hlTimer: null, showLadder: false };
 
 function scaleM() { var M = m4I(); M[0] = PRM.sx; M[5] = PRM.sy; M[10] = PRM.sz; return M; }
@@ -718,7 +719,35 @@ var STEPS = [
     ]
   },
   {
-    no: '第 7 步 · 组合',
+    no: '第 7 步 · 进阶缩放',
+    title: '单边拉伸 与 任意方向缩放：一个动作不够，就连乘',
+    text: '缩放矩阵有一条"天规"：<b>纯缩放永远关于原点对称</b>——x 拉长 2 倍，−x 面也被拉到 2 倍远。<br><b>① 想钉住 −x 面、只往 +x 拉？</b>一个矩阵做不到，两个动作连乘可以：先 S 缩放，再补一个平移 T 把跑掉的 −x 面<b>推回原位</b>。看矩阵：第 1 列是缩放 (sx,0,0)，第 4 列多出的那个数就是补偿平移 (sx−1)×0.55——<b>所以第 4 列不再是 0</b>。<br><b>② 想沿"非轴方向"（比如对角线）缩放？</b>对角线矩阵只能沿箭头方向拉。做法：<b>转过去 → 沿轴缩 → 转回来</b>（M = R(45°)·S·R(−45°)）。结果矩阵的非对角线上冒出数字——长得像剪切，其实是斜向的纯拉伸。<br><span class="cd">👉 点下面的 对称 / 单边 / 斜向 三种模式对比；M = T·R·S 里 S 在最右 = 沿物体本地轴缩放，放到最左就变成沿世界轴缩放——缩放在链中的位置决定它在哪个坐标系生效。</span>',
+    M: function() {
+      if (PRM.scaleMode === '单边') return m4mul(m4trans((PRM.sx - 1) * 0.55, 0, 0), scaleM());
+      if (PRM.scaleMode === '斜向') {
+        var a = (PRM.sx + 1) / 2, b = (PRM.sx - 1) / 2;
+        var M = m4I();
+        M[0] = a; M[1] = b; M[4] = b; M[5] = a;
+        return M;
+      }
+      return scaleM();
+    },
+    tags: function() {
+      if (PRM.scaleMode === '单边') return { '0-0': 'sx=' + f2(PRM.sx), '0-3': 'T=' + f2((PRM.sx - 1) * 0.55) + ' 补偿', '1-1': '1', '2-2': '1' };
+      if (PRM.scaleMode === '斜向') {
+        var a = f2((PRM.sx + 1) / 2), b = f2((PRM.sx - 1) / 2);
+        return { '0-0': '(sx+1)/2', '1-1': '(sx+1)/2', '0-1': '(sx−1)/2', '1-0': '(sx−1)/2' };
+      }
+      return { '0-0': 'sx=' + f2(PRM.sx), '1-1': 'sy=' + f2(PRM.sy), '2-2': 'sz=' + f2(PRM.sz) };
+    },
+    ghost: true, autoPlay: true,
+    explore: [
+      { p: 'sx', label: 'x 缩放', min: 0.2, max: 2.4, step: 0.05 },
+      { p: 'scaleMode', label: '模式', btns: ['对称', '单边', '斜向'] }
+    ]
+  },
+  {
+    no: '第 8 步 · 组合',
     title: '四个动作连乘：S → 斜切 → 旋转 → 平移',
     text: '游戏里没有"单一变换"——真实物体的矩阵是四个动作<b>连乘</b>：M = T·R·Sh·S（<b>右边的先作用</b>）。<br>按"重播"看完整流程：盒子先被<b>缩放</b>成鞋盒 → 被<b>斜切</b>推歪 → 整体<b>旋转</b> → 最后<b>平移</b>就位。矩阵的每一列是四个动作叠加后的"最终箭头住址"。<br><span class="cd">前面每一步的滑块参数都在这里生效——回去改改再回来重播。</span>',
     M: function() { return comboKeys()[4]; },
@@ -727,9 +756,9 @@ var STEPS = [
     ghost: true, autoPlay: true
   },
   {
-    no: '第 8 步 · 总结',
+    no: '第 9 步 · 总结',
     title: '一张表带走',
-    text: '<b>箭头动作 ↔ 矩阵长相 ↔ 盒子的体验：</b><br><span class="cx">缩放</span>：箭头拉长/压短 → 只有对角线有数 → 方块变鞋盒<br><span class="cy">斜切</span>：一支箭头歪掉 → 对角线全 1、旁边一个数 → 扑克牌推倒<br><span class="cz">旋转</span>：三支箭头一起转 → cos/sin 成对、det=1 → 刚体转动<br><span class="ct">位移</span>：箭头不动、原点搬家 → 只有第 4 列有数 → 全队搬家<br><br><b>读矩阵 = 竖着读列：</b>先看第 4 列（在哪），再看前三列（什么姿态、什么体型）。上面的矩阵表已把列头标好——扫一眼列头再对数字。<br><span class="cd">👉 用下面的滑块把四个动作随便混，右侧矩阵和盒子实时联动。玩熟了就点"下一步"做测验。</span>',
+    text: '<b>箭头动作 ↔ 矩阵长相 ↔ 盒子的体验：</b><br><span class="cx">缩放</span>：箭头拉长/压短 → 只有对角线有数 → 方块变鞋盒<br><span class="cy">斜切</span>：一支箭头歪掉 → 对角线全 1、旁边一个数 → 扑克牌推倒<br><span class="cz">旋转</span>：三支箭头一起转 → cos/sin 成对、det=1 → 刚体转动<br><span class="ct">位移</span>：箭头不动、原点搬家 → 只有第 4 列有数 → 全队搬家<br><br><b>读矩阵 = 竖着读列：</b>先看第 4 列（在哪），再看前三列（什么姿态、什么体型）。上面的矩阵表已把列头标好——扫一眼列头再对数字。<br><span class="cd">进阶两招（第 7 步）：单边拉伸 = 缩放 + 平移补偿（T·S）；任意方向缩放 = 转过去·沿轴缩·转回来（R·S·R⁻¹）。</span><br><span class="cd">👉 用下面的滑块把四个动作随便混，右侧矩阵和盒子实时联动。玩熟了就点"下一步"做测验。</span>',
     M: function() { return comboKeys()[4]; },
     keys: comboKeys,
     ghost: true, autoPlay: false,
@@ -741,7 +770,7 @@ var STEPS = [
     ]
   },
   {
-    no: '第 9 步 · 测验',
+    no: '第 10 步 · 测验',
     title: '随堂测验：五道题检验成果',
     text: '八步课全部学完，来做五道选择题验收：<b>每题点一个选项</b>，答对变绿、答错变红并亮出正确答案和解析。<br><span class="cd">卡壳的题回对应步骤重看：读法→第 2 步、平移→第 3 步、缩放→第 4 步、旋转→第 5 步、斜切→第 6 步。全对 = 毕业 🎓</span>',
     M: function() { return comboKeys()[4]; },
@@ -840,7 +869,18 @@ function whyHTML() {
   if (i === 5) {
     return '<b>为什么第2列多出一个 ' + f2(PRM.shearK) + '：</b>滑块 k 把 y 箭头<b>歪向 x 方向</b>，它的新家变成 (' + f2(PRM.shearK) + ', 1, 0) —— 对角线仍是 1（长度没变多少），旁边冒出的 k 就是"歪了多少"。效果：y 越高的点被拖得越远（x′ = x + ' + f2(PRM.shearK) + '·y），盒子被推成平行六面体。x、z 箭头不动 → 第1、3列不变。';
   }
-  // 组合（第7/8步）与测验步
+  if (i === 6) {
+    if (PRM.scaleMode === '单边') {
+      var off = (PRM.sx - 1) * 0.55;
+      return '<b>为什么需要两个动作连乘：</b>纯缩放 S(' + f2(PRM.sx) + ',1,1) 把 −x 面也拉到 −' + f2(PRM.sx * 0.55) + '（离原点 ' + f2(PRM.sx) + ' 倍远）。想钉住它：缩放后补平移 T(' + f2(off) + ', 0, 0) 把 −x 面推回 −0.55。<b>第4列那个 ' + f2(off) + ' = (sx−1)×0.55，就是补偿量</b>。M = T·S —— 一个动作做不到的事，两个连乘做到。';
+    }
+    if (PRM.scaleMode === '斜向') {
+      var a = f2((PRM.sx + 1) / 2), b = f2((PRM.sx - 1) / 2);
+      return '<b>为什么非对角线出现 ' + b + '：</b>沿对角线方向缩放 = R(45°) 把它转到 x 轴 → S(' + f2(PRM.sx) + ') → R(−45°) 转回来。乘出来：对角线变成 (' + a + ', ' + a + ')，非对角线各冒出 (' + f2(PRM.sx) + '−1)/2 = ' + b + '。<b>长得像剪切，但对角线方向是纯拉伸、垂直方向纹丝不动</b>（det = ' + f2(PRM.sx) + ' = 拉伸倍数）。';
+    }
+    return '<b>为什么缩放只在对角线上：</b>S 沿三支箭头各自方向拉长/压短，箭头不歪向别人 → 非对角线全 0。但它永远关于原点对称（−x 面跟着跑）。点"单边"或"斜向"看两种进阶做法。';
+  }
+  // 组合（第8/9步）与测验步
   var RShS = m4mul(rotM(), m4mul(shearM(), scaleM()));
   return '<b>为什么数字变成"混合物"：</b>最终每一列 = 四个动作依次作用后的箭头住址 —— 先被 S 拉长/压短（对角线成分）→ 被 Sh 推歪（旁边的 k 成分）→ 被 R 转向（cos/sin 成分）→ 原点最后被 T 搬走。<span class="cx">如第1列=' + col([f2(RShS[0]), f2(RShS[4]), f2(RShS[8])]) + '，同时混着 sx=' + f2(PRM.sx) + '、k=' + f2(PRM.shearK) + '、cos' + th + '°=' + C + ' 的乘积</span>；<span class="ct">第4列=(' + f2(PRM.tx) + ', ' + f2(PRM.ty) + ', ' + f2(PRM.tz) + ') 纯来自平移 T</span>。拆不开看的，回第 3~6 步逐个单独玩。';
 }
