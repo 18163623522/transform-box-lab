@@ -1098,6 +1098,14 @@ REDRAWS.push(draw);
 goToStep(0);
 resizeCanvas();
 setTimeout(function() { goToStep(0); }, 50); // 布局稳定后再进一次，确保尺寸正确
+
+// 主题跟随：matrix-family 中心页广播切换主题
+window.addEventListener("message", function(e) {
+  if (e.data && e.data.type === "mf-theme" && (e.data.theme === "light" || e.data.theme === "dark")) {
+    var cur = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+    if (cur !== e.data.theme && typeof toggleTheme === "function") toggleTheme();
+  }
+});
 </script>
 </body>
 </html>
